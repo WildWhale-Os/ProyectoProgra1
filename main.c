@@ -2,6 +2,11 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
+typedef struct {
+    int x;
+    int y;
+} cubes;
+
 SDL_Texture *LoadTexture(char *path, SDL_Renderer *renderer);
 
 void Cubes(SDL_Renderer *renderer, SDL_Texture *image, int x, int y);
@@ -31,8 +36,8 @@ int main() {
     screen = SDL_CreateWindow("Tetris Game",
                               SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED,
-                              640,
-                              640,
+                              720,
+                              680,
                               SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(screen, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     image = LoadTexture("./assets/greenblcok.png", renderer);
@@ -45,12 +50,8 @@ int main() {
 
         SDL_RenderClear(renderer);
         for (int y = 0; y <= 640; y += 40) {
-            for (int x = 0; x <= 360; x += 40) {
-                if (x == 0)
-                    Cubes(renderer, image, x, y);
-                if (y == 600)
-                    Cubes(renderer, image, x, y);
-                if (x == 360)
+            for (int x = 0; x <= 440; x += 40) {
+                if (x == 0 || x == 440 || y == 640)
                     Cubes(renderer, image, x, y);
             }
 
