@@ -41,11 +41,11 @@ Coor Tetraminos[][3] = {
 
 void Init();
 
-void DrawCubes(SDL_Renderer *renderer, int x, int y, SDL_Texture *image);
+void DrawCubes(int x, int y, SDL_Texture *image);
 
-void DrawPlayGround(SDL_Renderer *renderer, Tablero *t);
+void DrawPlayGround( Tablero *t);
 
-void DrawFigure(SDL_Renderer *renderer, Piezas *pieza);
+void DrawFigure(Piezas *pieza);
 
 void CrearPieza(Piezas *p, SDL_Texture *image);
 
@@ -61,7 +61,7 @@ void DetensionPieza(Tablero *t, Piezas *p);
 
 int HayColision(Tablero *t, Piezas *p);
 
-SDL_Texture *LoadTexture(char *path, SDL_Renderer *renderer);
+SDL_Texture *LoadTexture(char *path);
 
 int FilaCompleta(Tablero *t, int fila);
 
@@ -69,69 +69,105 @@ void EliminarFila(Tablero *t, int fila);
 
 int LineasELiminadas(Tablero *t);
 
-void Close(SDL_Renderer *renderer, SDL_Window *window, SDL_Texture *textura[]);
+SDL_Texture *GenerarTexto(char *string);
+
+void Actualizar (Tablero *t, Piezas *p, Piezas*next, SDL_Rect rects[], SDL_Texture *texturas[], char *sPunto, char* slineas, int *puntos, int *lineasEliminadas);
+
+void Close(SDL_Texture *textura[], char *spuntos, char  *slineas);
 
 int main() {
     srand(time(NULL));
     Init();
     Tablero t;
-    SDL_Texture *texturas[] = {LoadTexture("assets/VerticalWall.png", renderer),    //0
-                               LoadTexture("assets/RightCorner.png", renderer), //1
-                               LoadTexture("assets/LeftCorner.png", renderer),  //2
-                               LoadTexture("assets/HorizontaalWall.png", renderer), //3
-                               LoadTexture("assets/blueblock.png", renderer),   //4 (4-10 cubeImages)
-                               LoadTexture("assets/greenblcok.png", renderer),  //5
-                               LoadTexture("assets/orangeblock.png", renderer), //6
-                               LoadTexture("assets/pinkblock.png", renderer),   //7
-                               LoadTexture("assets/purpleblock.png", renderer), //8
-                               LoadTexture("assets/redblock.png", renderer),    //9
-                               LoadTexture("assets/yellowblock.png", renderer)};    //10
-
-    Piezas p;
-    CrearPieza(&p, texturas[4 + (rand() % 7)]);
-    LimpiarTablero(&t, texturas);
+    char *sPunto = (char*)malloc(10000000*sizeof(char));
+    int puntos = 0;
     int lineasEliminadas = 0;
+    char *slineas = (char*)malloc(10000000*sizeof(char));
+    SDL_Texture *texturas[] = {LoadTexture("assets/VerticalWall.png"),    //0
+                               LoadTexture("assets/RightCorner.png"), //1
+                               LoadTexture("assets/LeftCorner.png"),  //2
+                               LoadTexture("assets/HorizontaalWall.png"), //3
+                               LoadTexture("assets/blueblock.png"),   //4 (4-10 cubeImages)
+                               LoadTexture("assets/greenblcok.png"),  //5
+                               LoadTexture("assets/orangeblock.png"), //6
+                               LoadTexture("assets/pinkblock.png"),   //7
+                               LoadTexture("assets/purpleblock.png"), //8
+                               LoadTexture("assets/redblock.png"),    //9
+                               LoadTexture("assets/yellowblock.png"), //10
+                               GenerarTexto("Proxima Figura"),    //11
+                               GenerarTexto("Puntos"),    //12
+                               GenerarTexto("Lineas Eliminadas"),    //13
+                               NULL,    //14
+                               NULL,    //15
+                               NULL};   //16
+   SDL_Rect rects[] = {{520,0,150,40},
+                       {520,200,100,40},
+                       {520,400,180,40},
+                       {520, 240,0, 0},
+                       {520, 440, 0, 0}};
+
+    Piezas p, next;
+    CrearPieza(&p, texturas[4 + (rand() % 7)]);
+    CrearPieza(&next,texturas[4 + (rand() % 7)]);
+    p.central.x = 6;
+    p.central.y = 0;
+    LimpiarTablero(&t, texturas);
     SDL_Event event;
-    int play = 1, x = 6, y = 0;
+    int play = 1, tick = 0, down = 0, auxl;
+
+    Actualizar(&t,&p, &next,rects,texturas,sPunto,slineas,&puntos,&lineasEliminadas);
     while (play) {
+        Piezas aux = p;
         while (SDL_PollEvent(&event) != 0) {
-            Piezas aux = p;
             if (event.type == SDL_QUIT)
                 play = 0;
             else if (event.type == SDL_KEYDOWN) {
                 switch (event.key.keysym.sym) {
                     case SDLK_UP:
                         RotarPieza(&p);
+                        down = 0;
                         break;
                     case SDLK_DOWN:
                         p.central.y++;
+                        down = 1;
                         break;
                     case SDLK_LEFT:
                         p.central.x--;
+                        down = 0;
                         break;
                     case SDLK_RIGHT:
                         p.central.x++;
+                        down = 0;
                         break;
-                    case SDLK_SPACE:
-                        DetensionPieza(&t, &p);
-                        lineasEliminadas += LineasELiminadas(&t);
-                        CrearPieza(&p, texturas[4 + (rand() % 7)]);
-                        break;
-
                 }
             }
-            if (HayColision(&t, &p))
-                p = aux;
+        }
+        if(tick %20 == 0){
+            p.central.y++;
         }
 
-        SDL_RenderClear(renderer);
-        DrawPlayGround(renderer, &t); // ocupa x = 0 , x = WIDTH -1  y = HEIGHT -1
-        DrawFigure(renderer, &p);
-        SDL_RenderPresent(renderer);
-        SDL_UpdateWindowSurface(screen);
+        if (HayColision(&t, &p)) {
+            p = aux;
+            if (down) {
+                DetensionPieza(&t, &p);
+                auxl = LineasELiminadas(&t);
+                puntos += auxl == 1? auxl*25 : auxl * auxl *100;
+                lineasEliminadas += auxl;
+                p = next;
+                CrearPieza(&next, texturas[4 + (rand() % 7)]);
+                p.central.x = 6;
+                p.central.y = 1;
+                down = 0;
 
+            }
+        }
+
+
+        Actualizar(&t,&p, &next,rects,texturas,sPunto,slineas,&puntos,&lineasEliminadas);
+        SDL_Delay(30);
+        tick++;
     }
-    Close(renderer, screen, texturas);
+    Close(texturas, sPunto,slineas);
     return 0;
 }
 
@@ -146,13 +182,13 @@ void Init() {
     screen = SDL_CreateWindow("Tetris Game",
                               SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED,
-                              TAM * WIDTH,
+                              TAM * WIDTH + TAM * 6,
                               TAM * HEIGHT,
                               SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(screen, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 }
 
-void DrawCubes(SDL_Renderer *renderer, int x, int y, SDL_Texture *image) {
+void DrawCubes(int x, int y, SDL_Texture *image) {
     SDL_Rect cubepos;
     SDL_QueryTexture(image, NULL, NULL, &cubepos.w, &cubepos.h);
     cubepos.x = x * TAM;
@@ -160,17 +196,17 @@ void DrawCubes(SDL_Renderer *renderer, int x, int y, SDL_Texture *image) {
     SDL_RenderCopy(renderer, image, NULL, &cubepos);
 }
 
-void DrawFigure(SDL_Renderer *renderer, Piezas *pieza) {
+void DrawFigure(Piezas *pieza) {
     for (int i = 0; i < sizeof(pieza->laterales) / sizeof(Coor) + 1; ++i) {
         Coor pos = PiezaPos(i, pieza);
-        DrawCubes(renderer, pos.x, pos.y, pieza->images);
+        DrawCubes(pos.x, pos.y, pieza->images);
     }
 }
 
 void CrearPieza(Piezas *p, SDL_Texture *image) {
     int tetramino = rand() % (sizeof(Tetraminos) / (sizeof(Coor) * 3));
-    p->central.x = 6;
-    p->central.y = 1;
+    p->central.x = 14;
+    p->central.y = 2;
     for (int i = 0; i < (sizeof(Tetraminos) / (sizeof(Coor) * 3)); ++i)
         p->laterales[i] = Tetraminos[tetramino][i];
     p->images = image;
@@ -191,7 +227,7 @@ Coor PiezaPos(int n, Piezas *p) {
     return pos;
 }
 
-SDL_Texture *LoadTexture(char *path, SDL_Renderer *renderer) {
+SDL_Texture *LoadTexture(char *path) {
     SDL_Texture *textura = NULL;
     SDL_Surface *surface = NULL;
     surface = IMG_Load(path);
@@ -208,11 +244,11 @@ SDL_Texture *LoadTexture(char *path, SDL_Renderer *renderer) {
     return textura;
 }
 
-void DrawPlayGround(SDL_Renderer *renderer, Tablero *t) {
+void DrawPlayGround(Tablero *t) {
     for (int y = 0; y < HEIGHT; ++y) {
         for (int x = 0; x < WIDTH; ++x) {
             if (t->pos[y][x] != NULL)
-                DrawCubes(renderer, x, y, t->pos[y][x]);
+                DrawCubes(x, y, t->pos[y][x]);
         }
     }
 }
@@ -256,11 +292,12 @@ void DetensionPieza(Tablero *t, Piezas *p) {
 }
 
 int HayColision(Tablero *t, Piezas *p) {
+
     for (int i = 0; i < sizeof(p->laterales) / sizeof(Coor) + 1; ++i) {
         Coor pos = PiezaPos(i, p);
         if (pos.x < 1 || pos.x >= WIDTH - 1)
             return 1;
-        if (pos.y < 0 || pos.y >= HEIGHT - 1)
+        if (pos.y < 0 || pos.y > HEIGHT - 2)
             return 1;
         if (t->pos[pos.y][pos.x] != NULL)
             return 1;
@@ -294,24 +331,56 @@ int LineasELiminadas(Tablero *t) {
         if (FilaCompleta(t, actRow)) {
             EliminarFila(t, actRow);
             lineasElim++;
-        }
-       else
-           actRow--;
+        } else
+            actRow--;
 
     }
     return lineasElim;
 }
 
-void Close(SDL_Renderer *renderer, SDL_Window *window, SDL_Texture *textura[]) {
+SDL_Texture *GenerarTexto(char *string){
+    SDL_Texture *aux;
+    TTF_Font *font = TTF_OpenFont("assets/Montserrat-Regular.ttf", 28);
+    SDL_Color color = {255, 255, 255, 255};
+    SDL_Surface *textsurface = TTF_RenderText_Solid(font, string, color);
+    aux = SDL_CreateTextureFromSurface(renderer, textsurface);
+    SDL_FreeSurface(textsurface);
+    return  aux;
+
+}
+
+void Actualizar (Tablero *t, Piezas *p, Piezas*next, SDL_Rect rects[], SDL_Texture *texturas[], char *sPunto, char* slineas, int *puntos, int *lineasEliminadas){
+    sprintf(sPunto,"%d",*puntos);
+    texturas[14] = GenerarTexto(sPunto);
+    sprintf(slineas,"%d",*lineasEliminadas);
+    texturas[15] = GenerarTexto(slineas);
+    SDL_QueryTexture(texturas[14],NULL,NULL,&rects[3].w,&rects[3].h);
+    SDL_QueryTexture(texturas[15],NULL,NULL,&rects[4].w,&rects[4].h);
+    SDL_RenderClear(renderer);
+    DrawPlayGround(t); // ocupa x = 0 , x = WIDTH -1  y = HEIGHT -1
+    DrawFigure(p);
+    DrawFigure(next);
+    SDL_RenderCopy(renderer, texturas[11], NULL, &rects[0]);
+    SDL_RenderCopy(renderer, texturas[12], NULL, &rects[1]);
+    SDL_RenderCopy(renderer, texturas[13], NULL, &rects[2]);
+    SDL_RenderCopy(renderer,texturas[14],NULL,&rects[3]);
+    SDL_RenderCopy(renderer,texturas[15],NULL,&rects[4]);
+    SDL_RenderPresent(renderer);
+    SDL_UpdateWindowSurface(screen);
+}
+
+void Close(SDL_Texture *textura[], char *spuntos, char* slineas) {
 
     for (int i = 0; i < 11; ++i) {
         SDL_DestroyTexture(textura[i]);
         textura[i] = NULL;
     }
+    free(spuntos);
+    free(slineas);
     SDL_DestroyRenderer(renderer);
     renderer = NULL;
-    SDL_DestroyWindow(window);
-    window = NULL;
+    SDL_DestroyWindow(screen);
+    screen = NULL;
     IMG_Quit();
     TTF_Quit();
     SDL_Quit();
