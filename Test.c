@@ -17,7 +17,7 @@ SDL_Color blanco = {255, 255, 255, 255};
 SDL_Color rojot = {255, 0, 0, 230};
 
 typedef struct {
-    SDL_Texture *pos[HEIGHT][WIDTH];
+    SDL_Texture ***pos;
 } Tablero;
 
 typedef struct {
@@ -101,7 +101,17 @@ int main() {
     srand(time(NULL));
     Init();
     Tablero t;
+    t.pos = (SDL_Texture ***) malloc(HEIGHT * sizeof(SDL_Texture ***));
+    for (int j = 0; j < HEIGHT; ++j) {
+        t.pos[j] = (SDL_Texture **) malloc(WIDTH * sizeof(SDL_Texture **));
+    }
     Records *top10 = (Records *) malloc(10 * sizeof(Records));
+    for (int k = 0; k < 10 ; ++k) {
+        for (int i = 0; i < 30 ; ++i) {
+            top10[k].nombre[i] = '\0';
+        }
+        top10[k].puntaje = 0;
+    }
     LeerRecords(records, top10);
     char *sPunto = (char *) malloc(10000000 * sizeof(char));
     long long puntos = 0;
@@ -125,9 +135,9 @@ int main() {
                                LoadTexture("assets/purpleblock.png"), //8
                                LoadTexture("assets/redblock.png"),    //9
                                LoadTexture("assets/yellowblock.png"), //10
-                               ImprimirTexto(texturas[11], &rects[0], "Prixima Figura", &blanco, 32),    //11
-                               ImprimirTexto(texturas[12], &rects[1], "Puntaje", &blanco, 32),    //12
-                               ImprimirTexto(texturas[13], &rects[2], "Lineas Eliminadas", &blanco, 32),    //13
+                               ImprimirTexto(texturas[11], &rects[0], "Prixima Figura", &blanco, 28),    //11
+                               ImprimirTexto(texturas[12], &rects[1], "Puntaje", &blanco, 28),    //12
+                               ImprimirTexto(texturas[13], &rects[2], "Lineas Eliminadas", &blanco, 28),    //13
                                NULL,    //14
                                NULL,    //15
                                ImprimirTexto(texturas[16], &rects[5], "Game Over", &rojot, 62)};   //16
@@ -179,7 +189,7 @@ int main() {
         if (HayColision(&t, &p)) {
             p = aux;
             for (int i = 0; i < 4; ++i) {
-                if (PiezaPos(i, &p).y == 0) {
+                if (PiezaPos(i, &p).y == 0 && HayColision(&t,&p) == 2) {
                     GameOver(rects, records, top10, &event, texturas, &puntos, sPunto);
                     play = 0;
                     break;
@@ -198,15 +208,17 @@ int main() {
                 down = 0;
             }
         }
-
-
         if (play) {
             Actualizar(&t, &p, &next, rects, texturas, sPunto, slineas, &puntos, &lineasEliminadas);
-            SDL_Delay(30);
+            SDL_Delay(20);
             tick++;
         }
 
     }
+    for (int j = 0; j < HEIGHT; ++j) {
+        free(t.pos[j]);
+    }
+    free(t.pos);
     free(top10);
     Close(texturas, sPunto, slineas);
     return 0;
@@ -336,11 +348,11 @@ int HayColision(Tablero *t, Piezas *p) {
 
     for (int i = 0; i < sizeof(p->laterales) / sizeof(Coor) + 1; ++i) {
         Coor pos = PiezaPos(i, p);
-        if (pos.x < 1 || pos.x >= WIDTH - 1)
-            return 1;
-        if (pos.y > HEIGHT - 2)
-            return 1;
         if (t->pos[pos.y][pos.x] != NULL)
+            return 2;
+        if (pos.y < 0 || pos.y > HEIGHT - 2)
+            return 1;
+        if (pos.x < 1 || pos.x >= WIDTH - 1)
             return 1;
     }
     return 0;
@@ -436,7 +448,7 @@ void GameOver(SDL_Rect *rects, FILE *file, Records *top10, SDL_Event *event, SDL
         new.nombre[i] = '\0';
     }
     texturas[13] = NULL;
-    file = fopen("assets/record.txt","w");
+    file = fopen("assets/record.txt", "w");
     texturas[14] = ImprimirNumeros(texturas[14], &rects[3], puntos, &blanco, sPunto);
     rects[3].x = 12 * TAM;
     rects[3].y = 6 * TAM - rects[3].h / 2;
@@ -450,11 +462,10 @@ void GameOver(SDL_Rect *rects, FILE *file, Records *top10, SDL_Event *event, SDL
     int inputName = 1;
     while (inputName) {
         while (SDL_PollEvent(event) != 0) {
-            if (event->type == SDL_QUIT){
+            if (event->type == SDL_QUIT) {
                 inputName = 0;
                 break;
-            }
-            else if (event->type == SDL_TEXTINPUT) {
+            } else if (event->type == SDL_TEXTINPUT) {
                 strcat(new.nombre, event->text.text);
                 texturas[13] = ImprimirTexto(texturas[13], &rects[2], new.nombre, &blanco, 26);
                 rects[2].x = 12 * TAM;
@@ -475,7 +486,7 @@ void GameOver(SDL_Rect *rects, FILE *file, Records *top10, SDL_Event *event, SDL
         SDL_RenderPresent(renderer);
         SDL_UpdateWindowSurface(screen);
     }
-    ActualizarRecords(file,top10,&new);
+    ActualizarRecords(file, top10, &new);
     SDL_StopTextInput();
     SDL_StopTextInput();
     fclose(file);
@@ -483,16 +494,16 @@ void GameOver(SDL_Rect *rects, FILE *file, Records *top10, SDL_Event *event, SDL
 
 void ActualizarRecords(FILE *file, Records *top10, Records *new) {
 
-    if(new->puntaje > top10[0].puntaje)
+    if (new->puntaje > top10[0].puntaje) {
+        for (int k = 1; k < 10; ++k) {
+            top10[k] = top10[k - 1];
+        }
         top10[0] = *new;
-    else if(top10[9].puntaje < new->puntaje){
+    } else if (top10[9].puntaje < new->puntaje) {
         top10[9] = *new;
-        for (int i = 0; i < 10; i++)
-        {
-            for (int j = i + 1; j < 10; j++)
-            {
-                if (top10[i].puntaje < top10[j].puntaje)
-                {
+        for (int i = 0; i < 10; i++) {
+            for (int j = i + 1; j < 10; j++) {
+                if (top10[i].puntaje < top10[j].puntaje) {
                     Records aux = top10[i];
                     top10[i] = top10[j];
                     top10[j] = aux;
@@ -504,11 +515,8 @@ void ActualizarRecords(FILE *file, Records *top10, Records *new) {
     }
 
 
-
-
-
     for (int i = 0; i < 10; i++)
-        fprintf(file, "%s %lld\n",top10[i].nombre,top10[i].puntaje);
+        fprintf(file, "%s %lld\n", top10[i].nombre, top10[i].puntaje);
 }
 
 void Close(SDL_Texture *textura[], char *spuntos, char *slineas) {
@@ -527,8 +535,3 @@ void Close(SDL_Texture *textura[], char *spuntos, char *slineas) {
     TTF_Quit();
     SDL_Quit();
 }
-//SDL_RenderClear(renderer);
-//SDL_RenderCopy(renderer, textura, NULL, rect);
-//SDL_RenderPresent(renderer);
-//SDL_UpdateWindowSurface(screen);
-//SDL_Delay(5000);
