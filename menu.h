@@ -1,6 +1,25 @@
 #define menuNum  4
 #define buttonNum 4
 
+
+
+SDL_Texture* LoadTexture(char* path, SDL_Renderer* screen) {
+    SDL_Texture* textura = NULL;
+    SDL_Surface* surface = NULL;
+    surface = IMG_Load(path);
+    if (surface == NULL)
+        printf("No se pudo cargar la imagen: %s\n", IMG_GetError());
+    else {
+        textura = SDL_CreateTextureFromSurface(screen, surface);
+        if (textura == NULL)
+            printf("Error al generar textura: %s\n", SDL_GetError());
+    }
+
+    SDL_FreeSurface(surface);
+    surface = NULL;
+    return textura;
+}
+
 void createButton(SDL_Renderer* screen, TTF_Font* font, SDL_Texture* menus[], const char* button, SDL_Color* color, SDL_Rect* pos, int cont) {
     SDL_Surface* textSurface = TTF_RenderText_Solid(font, button, color[0]);
     menus[cont] = SDL_CreateTextureFromSurface(screen, textSurface);
@@ -12,6 +31,16 @@ void createButton(SDL_Renderer* screen, TTF_Font* font, SDL_Texture* menus[], co
 int menu(SDL_Renderer* screen, TTF_Font* font) {
     Uint32 time;
     int x, y;//coordenadas del mouse
+
+    SDL_Texture* currentImage[] = { LoadTexture("assets/m1.png",screen),
+                                    LoadTexture("assets/m2.png",screen),
+                                    LoadTexture("assets/m3.png",screen),
+                                    LoadTexture("assets/m4.png",screen),
+                                    LoadTexture("assets/m5.png",screen),
+                                    LoadTexture("assets/m6.png",screen),
+                                    LoadTexture("assets/m7.png",screen),
+    };
+    int cont = 0;
 
     const char* button[menuNum] = { "Play","Settings","Controls","Exit" };//2 = cantidad de botones en el menu
     SDL_Texture* menus[menuNum];
@@ -98,7 +127,12 @@ int menu(SDL_Renderer* screen, TTF_Font* font) {
 
             }
         }
+
         SDL_RenderClear(screen);
+        SDL_RenderCopy(screen, currentImage[cont / 5], NULL, NULL);
+        if (cont == 30)cont = 0;
+        else cont += 1;
+
         for (int i = 0; i < menuNum; i++)
         {
             SDL_RenderCopy(screen, menus[i], NULL, &pos[i]);
@@ -106,12 +140,21 @@ int menu(SDL_Renderer* screen, TTF_Font* font) {
         SDL_RenderPresent(screen);
         SDL_UpdateWindowSurface(screen);
     }
+    SDL_DestroyTexture(currentImage);
+    *currentImage = NULL;
 }
 
 int settings(SDL_Renderer* screen, TTF_Font* font) {
     Uint32 time;
     int x, y;//coordenadas del mouse
 
+    SDL_Texture* currentImage[] = { LoadTexture("assets/c1.png",screen),
+                                LoadTexture("assets/c2.png",screen),
+                                LoadTexture("assets/c3.png",screen),
+                                LoadTexture("assets/c4.png",screen),
+                                LoadTexture("assets/c5.png",screen),
+                                LoadTexture("assets/c6.png",screen),
+    };
 
     char* button[] = { "BACK","Volume","more","less" };//2 = cantidad de botones en el menu
     SDL_Texture* menus[buttonNum];
@@ -189,6 +232,7 @@ int settings(SDL_Renderer* screen, TTF_Font* font) {
             }
         }
         SDL_RenderClear(screen);
+        SDL_RenderCopy(screen, currentImage[0], NULL, NULL);
         for (int i = 0; i < buttonNum; i++)
         {
             SDL_RenderCopy(screen, menus[i], NULL, &pos[i]);
@@ -201,6 +245,15 @@ int settings(SDL_Renderer* screen, TTF_Font* font) {
 int controls(SDL_Renderer* screen, TTF_Font* font) {
     Uint32 time;
     int x, y;//coordenadas del mouse
+
+    SDL_Texture* currentImage[] = { LoadTexture("assets/s1.png",screen),
+                            LoadTexture("assets/s2.png",screen),
+                            LoadTexture("assets/s3.png",screen),
+                            LoadTexture("assets/s4.png",screen),
+                            LoadTexture("assets/s5.png",screen),
+                            LoadTexture("assets/s6.png",screen),
+                            LoadTexture("assets/s7.png",screen),
+    };
 
     const char* button[1] = { "BACK" };//2 = cantidad de botones en el menu
     SDL_Texture* menus[1];
@@ -271,6 +324,7 @@ int controls(SDL_Renderer* screen, TTF_Font* font) {
             }
         }
         SDL_RenderClear(screen);
+        SDL_RenderCopy(screen, currentImage[0], NULL, NULL);
         SDL_RenderCopy(screen, menus[0], NULL, &pos[0]);
         SDL_RenderPresent(screen);
         SDL_UpdateWindowSurface(screen);
@@ -374,4 +428,3 @@ int pause(SDL_Renderer* screen, TTF_Font* font) {
         SDL_UpdateWindowSurface(screen);
     }
 }
-
