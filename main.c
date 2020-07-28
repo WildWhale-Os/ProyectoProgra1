@@ -23,7 +23,7 @@ int main(){
                 CleanTextures(texturas);
                 break;
             case 2:
-                opcion = settings(texturas,color);
+                opcion = Puntajes(texturas,color);
                 CleanTextures(texturas);
                 break;
             case 3:

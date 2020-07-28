@@ -21,23 +21,23 @@
 SDL_Window *screen = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Color blanco = {255, 255, 255, 255};
-SDL_Color rojot = {255, 0, 0, 230};
-char *colors[] = {"assets/greenblcok.png",
-                  "assets/blueblock.png",
-                  "assets/orangeblock.png",
-                  "assets/pinkblock.png",
-                  "assets/purpleblock.png",
-                  "assets/redblock.png",
-                  "assets/yellowblock.png"};
+char *colors[] = {"assets/Block1.png",
+                  "assets/Block2.png",
+                  "assets/Block3.png",
+                  "assets/Block4.png",
+                  "assets/Block5.png",
+                  "assets/Block6.png",
+                  "assets/Block7.png",
+                  "assets/Block8.png"};
 
 
 typedef struct {
-    SDL_Texture * pos[HEIGHT][WIDTH];
+    SDL_Texture *pos[HEIGHT][WIDTH];
 } Tablero;
 
 typedef struct {
-    int x;
-    int y;
+    double x;
+    double y;
 } Coor;
 
 typedef struct {
@@ -84,9 +84,9 @@ void DrawCubes(int x, int y, SDL_Texture *image);
 
 void DefinirTexturasGame(SDL_Texture **texturas, char **paths, SDL_Rect *rects);
 
-SDL_Texture *createButton(SDL_Texture *menus, char *button, SDL_Color *color, SDL_Rect *pos);
+SDL_Texture *createButton(SDL_Texture *menus, char *button, SDL_Rect *pos);
 
-int settings(SDL_Texture **texturas, SDL_Color *color);
+int Puntajes(SDL_Texture **texturas, SDL_Color *color);
 
 int controls(SDL_Texture **texturas, SDL_Color *color);
 
@@ -119,7 +119,7 @@ int HayColision(Tablero *t, Piezas *p, SDL_Texture *texturas[]);
 int onColision(Tablero *t, Piezas *p, Piezas *next, Piezas *aux, TableroPuntaje *tp, Records *top10,
                SDL_Texture *texturas[], SDL_Rect *rects, SDL_Event *event, int *down, FILE *records);
 
-SDL_Texture *LoadTexture(SDL_Texture *textura,char *path);
+SDL_Texture *LoadTexture(SDL_Texture *textura, char *path);
 
 int FilaCompleta(Tablero *t, int fila);
 
@@ -144,14 +144,14 @@ void UpdateRecords(FILE *file, Records *top10, Records *new);
 void Close(SDL_Texture *textura[]);
 
 int play(SDL_Texture **texturas) {
-    FILE *records;
+    FILE *records = NULL;
     srand(time(NULL));
     int play = 1;
     Tablero t;
     CrearTableroEnMemoria(t.pos);
     char *paths[28];
     CrearArregloPath(paths);
-    Records top10 [10];
+    Records top10[10];
     InitRecords(top10);
     LeerRecords(records, top10);
     TableroPuntaje tp;
@@ -159,20 +159,21 @@ int play(SDL_Texture **texturas) {
     SDL_Rect rects[] = {{520, 0,   0, 0},    //0
                         {520, 200, 0, 0},    //1
                         {520, 400, 0, 0},    //2
-                        {520, 240, 0, 0}, //3
-                        {520, 440, 0, 0}, //4
-                        {0,   0, TAM * WIDTH, TAM * HEIGHT}}; //5
+                        {15 * TAM, 310, 0, 0}, //3
+                        {15 * TAM, 490, 0, 0}, //4
+                        {0,   0, TAM * WIDTH, TAM * HEIGHT}, //5
+                        {WIDTH* TAM,0,TAM * 6,TAM * HEIGHT}};
 
     DefinirTexturasGame(texturas, paths, rects);
     Piezas p, next;
     CrearPieza(&p, texturas[4]);
-    texturas[4] = LoadTexture(texturas[4],colors[rand() % 7]);
+    texturas[4] = LoadTexture(texturas[4], colors[rand() % 8]);
     CrearPieza(&next, texturas[4]);
     p.central.x = 6;
     p.central.y = 1;
     LimpiarTablero(&t, texturas);
     SDL_Event event;
-    int tick = 0, down = 0, auxl, control = 0, direccion = 1, retorno = 0;
+    int tick = 0, down = 0, control = 0, direccion = 1, retorno = 0;
     Update(&t, &p, &next, rects, texturas, &tp);
     while (play) {
         Piezas aux = p;
@@ -216,7 +217,7 @@ int play(SDL_Texture **texturas) {
             play = onColision(&t, &p, &next, &aux, &tp, top10, texturas, rects, &event, &down, records);
             if (!play)
                 retorno = 1;
-            if (play){
+            if (play) {
                 Update(&t, &p, &next, rects, texturas, &tp);
                 //SDL_Delay(20);
                 tick++;
@@ -243,7 +244,7 @@ void Init() {
                               TAM * WIDTH + TAM * 6,
                               TAM * HEIGHT,
                               SDL_WINDOW_SHOWN);
-    renderer = SDL_CreateRenderer(screen, -1,  SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(screen, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 }
 
 void CrearArregloPath(char **paths) {
@@ -279,31 +280,29 @@ void CrearArregloPath(char **paths) {
 
 void CrearTableroEnMemoria(SDL_Texture *pos[][WIDTH]) {
     for (int j = 0; j < HEIGHT; ++j) {
-        for (int i = 0; i < WIDTH ; ++i) {
+        for (int i = 0; i < WIDTH; ++i) {
             pos[j][i] = NULL;
         }
     }
 }
 
 void DefinirTexturasGame(SDL_Texture **texturas, char **paths, SDL_Rect *rects) {
-    texturas[0] = LoadTexture(texturas[0],paths[0]);
-    texturas[1] = LoadTexture(texturas[1],paths[3]);
-    texturas[2] = LoadTexture(texturas[2],paths[1]);
-    texturas[3] = LoadTexture(texturas[3],paths[2]);
-    texturas[4] = LoadTexture(texturas[4],colors[rand() % 7]);
-    texturas[5] = ImprimirTexto(texturas[5], &rects[0], "Proxima Figura", &blanco, 28);
-    texturas[6] = ImprimirTexto(texturas[6], &rects[1], "Puntaje", &blanco, 28);
-    texturas[7] = ImprimirTexto(texturas[7], &rects[2], "Lineas Eliminadas", &blanco, 26);
+    texturas[0] = LoadTexture(texturas[0], paths[0]);
+    texturas[1] = LoadTexture(texturas[1], paths[3]);
+    texturas[2] = LoadTexture(texturas[2], paths[1]);
+    texturas[3] = LoadTexture(texturas[3], paths[2]);
+    texturas[4] = LoadTexture(texturas[4], colors[rand() % 8]);
+    texturas[5] = LoadTexture(texturas[5],"assets/backrounds/info.png");
     texturas[8] = NULL;
     texturas[9] = NULL;
-    texturas[10] = LoadTexture(texturas[10],"assets/Board.png");
+    texturas[10] = LoadTexture(texturas[10], "assets/Board.png");
 }
 
 void
 DefinirTexturasMenu(SDL_Texture **texturas, char **paths, SDL_Rect *pos, char **buttons, SDL_Color *color, int *frame) {
     for (int i = 0; i < menuNum; i++) {
-        texturas[i] = createButton(texturas[i], buttons[i], &color[0], &pos[i]);
-        pos[i].x = 300;
+        texturas[i] = createButton(texturas[i], buttons[i], &pos[i]);
+        pos[i].x = TAM * 9 - (pos[i].w/2);
         pos[i].y = 250 + 50 * i;
     }
     texturas[4] = LoadTexture(texturas[4], paths[*frame]);
@@ -313,27 +312,24 @@ DefinirTexturasMenu(SDL_Texture **texturas, char **paths, SDL_Rect *pos, char **
 }
 
 void DefinirTexturasControl(SDL_Texture **texturas, SDL_Rect *pos, char **buttons, SDL_Color *color) {
-    texturas[0] = createButton(texturas[0], buttons[0], color, &pos[0]);
+    texturas[0] = createButton(texturas[0], buttons[0], &pos[0]);
     pos[0].x = 40;
     pos[0].y = 40;
 }
 
-void DefinirTexturasSettings(SDL_Texture **texturas, SDL_Rect *pos, char **buttons, SDL_Color *color) {
-    for (int i = 0; i < menuNum; i++) {
-        texturas[i] = createButton(texturas[i], buttons[i], &color[0], &pos[i]);
-        pos[i].x = 300;
-        pos[i].y = 250 + 50 * i;
-    }
+void DefinirTexturasRecords(SDL_Texture **texturas, SDL_Rect *pos, char **buttons, SDL_Color *color) {
+    texturas[0] = createButton(texturas[0],buttons[0],pos);
     pos[0].x = 40;
     pos[0].y = 40;
 }
 
 void DefinirTexturasPause(SDL_Texture **texturas, SDL_Rect *pos, char **buttons, SDL_Color *color) {
     for (int i = 0; i < menuNum; i++) {
-        texturas[i] = createButton(texturas[i], buttons[i], &color[0], &pos[i]);
+        texturas[i] = createButton(texturas[i], buttons[i], &pos[i]);
         pos[i].x = 300;
         pos[i].y = 250 + 50 * i;
     }
+    texturas[4] = LoadTexture(texturas[4], buttons[8]);
 }
 
 void InitRecords(Records *top10) {
@@ -369,7 +365,7 @@ void DrawFigure(Piezas *pieza) {
 
 void CrearPieza(Piezas *p, SDL_Texture *image) {
     int tetramino = rand() % 7;
-    p->central.x = 14;
+    p->central.x = 15 - 0.5;
     p->central.y = 2;
     for (int i = 0; i < 3; ++i)
         p->laterales[i] = Tetraminos[tetramino][i];
@@ -391,7 +387,7 @@ Coor PiezaPos(int n, Piezas *p) {
     return pos;
 }
 
-SDL_Texture *LoadTexture(SDL_Texture *textura ,char *path) {
+SDL_Texture *LoadTexture(SDL_Texture *textura, char *path) {
     SDL_Surface *surface = NULL;
     surface = IMG_Load(path);
     if (surface == NULL)
@@ -407,30 +403,23 @@ SDL_Texture *LoadTexture(SDL_Texture *textura ,char *path) {
     return textura;
 }
 
-SDL_Texture *createButton(SDL_Texture *menus, char *button, SDL_Color *color, SDL_Rect *pos) {
-    TTF_Font *font = TTF_OpenFont("assets/Neuborn Regular.ttf", 32);
-    SDL_Surface *textSurface = TTF_RenderText_Solid(font, button, *color);
+SDL_Texture *createButton(SDL_Texture *menus, char *button, SDL_Rect *pos) {
+   SDL_Surface *textSurface = IMG_Load(button);
     menus = SDL_CreateTextureFromSurface(renderer, textSurface);
     SDL_QueryTexture(menus, NULL, NULL, &pos->w, &pos->h);
     SDL_FreeSurface(textSurface);
     textSurface = NULL;
-    TTF_CloseFont(font);
     return menus;
 }
 
-int settings(SDL_Texture **texturas, SDL_Color *color) {
+int Puntajes(SDL_Texture **texturas, SDL_Color *color) {
     //Uint32 time;
     int x, y;//coordenadas del mouse
-    char *paths[] = {"assets/backrounds/s1.png",
-                     "assets/backrounds/s2.png",
-                     "assets/backrounds/s3.png",
-                     "assets/backrounds/s4.png",
-                     "assets/backrounds/s5.png",
-                     "assets/backrounds/s6.png",
-                     "assets/backrounds/s7.png"};
-    char *button[] = {"BACK", "Volume", "more", "less"};//2 = cantidad de botones en el menu
-    SDL_Rect pos[buttonNum];
-    DefinirTexturasSettings(texturas, pos, button, color);
+    char *paths = "assets/backrounds/s1.png";
+    char *button[] = {"assets/buttons/button15.png",
+                      "assets/buttons/button16.png"};//2 = cantidad de botones en el menu
+    SDL_Rect pos;
+    DefinirTexturasRecords(texturas, &pos, button, color);
     int cont = 0;
     SDL_Event event;
     int inSettings = 1, retorno = 0;
@@ -445,31 +434,31 @@ int settings(SDL_Texture **texturas, SDL_Color *color) {
                 case SDL_MOUSEMOTION:
                     x = event.motion.x;
                     y = event.motion.y;
-                    for (int i = 0; i < buttonNum; i++) {
-                        if (x >= pos[i].x && x <= pos[i].x + pos[i].w && y >= pos[i].y && y <= pos[i].y + pos[i].h) {
-                            texturas[i] = createButton(texturas[i], button[i], &color[1], &pos[i]);
-                            continue;
-                        } else {
-                            texturas[i] = createButton(texturas[i], button[i], &color[0], &pos[i]);
-                            continue;
-                        }
+
+                    if (x >= pos.x && x <= pos.x + pos.w && y >= pos.y && y <= pos.y + pos.h) {
+                        texturas[0] = createButton(texturas[0], button[1], &pos);
+                        continue;
+                    } else {
+                        texturas[0] = createButton(texturas[0], button[0],&pos);
+                        continue;
                     }
+
                     break;
                 case SDL_MOUSEBUTTONDOWN:
                     x = event.button.x;
                     y = event.button.y;
-                    for (int i = 0; i < buttonNum; i++) {
-                        if (x >= pos[i].x && x <= pos[i].x + pos[i].w && y >= pos[i].y && y <= pos[i].y + pos[i].h) {
-                            switch (i) {
-                                case 0:
+                    //for (int i = 0; i < buttonNum; i++) {
+                        if (x >= pos.x && x <= pos.x + pos.w && y >= pos.y && y <= pos.y + pos.h) {
+                            //switch (i) {
+                               // case 0:
                                     retorno = 1;
                                     inSettings = 0;
-                                    break;
-                                default:
-                                    break;
+                                    //break;
+                                //default:
+                                    //break;
                             }
-                        }
-                    }
+                        //}
+                    //}
                     break;
                 case SDL_KEYDOWN:
                     if (event.key.keysym.sym == SDLK_ESCAPE) {
@@ -480,14 +469,14 @@ int settings(SDL_Texture **texturas, SDL_Color *color) {
 
             }
         }
-        texturas[menuNum] = LoadTexture(texturas[menuNum] ,paths[cont / 5]);
+        texturas[1] = LoadTexture(texturas[1], paths);
         if (cont == 30)cont = 0;
         else cont += 1;
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, texturas[menuNum], NULL, NULL);
-        for (int i = 0; i < buttonNum; i++) {
-            SDL_RenderCopy(renderer, texturas[i], NULL, &pos[i]);
-        }
+
+        SDL_RenderCopy(renderer, texturas[0], NULL, &pos);
+
         SDL_RenderPresent(renderer);
         SDL_UpdateWindowSurface(screen);
     }
@@ -504,9 +493,10 @@ int controls(SDL_Texture **texturas, SDL_Color *color) {
                      "assets/backrounds/c5.png",
                      "assets/backrounds/c6.png"};
 
-    char *button[1] = {"BACK"};//2 = cantidad de botones en el menu
+    char *pathButtons[] = {"assets/buttons/button15.png",
+                           "assets/buttons/button16.png"};
     SDL_Rect pos[1];
-    DefinirTexturasControl(texturas, pos, button, color);
+    DefinirTexturasControl(texturas, pos, pathButtons, color);
     int cont = 0;
     SDL_Event event;
     int inControl = 1, retorno = 0;
@@ -523,10 +513,10 @@ int controls(SDL_Texture **texturas, SDL_Color *color) {
                     y = event.motion.y;
                     for (int i = 0; i < 1; i++) {
                         if (x >= pos[i].x && x <= pos[i].x + pos[i].w && y >= pos[i].y && y <= pos[i].y + pos[i].h) {
-                            texturas[i] = createButton(texturas[i], button[i], &color[1], &pos[i]);
+                            texturas[i] = createButton(texturas[i], pathButtons[1], &pos[i]);
                             continue;
                         } else {
-                            texturas[i] = createButton(texturas[i], button[i], &color[0], &pos[i]);
+                            texturas[i] = createButton(texturas[i], pathButtons[0], &pos[i]);
                             continue;
                         }
                     }
@@ -556,7 +546,7 @@ int controls(SDL_Texture **texturas, SDL_Color *color) {
                     break;
             }
         }
-        texturas[1] = LoadTexture(texturas[1],paths[cont / 5]);
+        texturas[1] = LoadTexture(texturas[1], paths[cont / 5]);
         if (cont == 25)cont = 0;
         else cont += 1;
         SDL_RenderClear(renderer);
@@ -600,18 +590,19 @@ int Menu(SDL_Texture **texturas, SDL_Color *color) {
                      "assets/title/title26.png",    //25
                      "assets/title/title27.png",    //26
                      "assets/backrounds/m1.png",    //27
-                     "assets/backrounds/m2.png",    //28
-                     "assets/backrounds/m3.png",    //29
-                     "assets/backrounds/m4.png",    //30
-                     "assets/backrounds/m5.png",    //31
-                     "assets/backrounds/m6.png",    //32
-                     "assets/backrounds/m7.png",    //33
-                     "assets/backrounds/m8.png"};   //34
+                    };
+    char *pathsButtons[] = {"assets/buttons/button1.png",
+                            "assets/buttons/button4.png",
+                            "assets/buttons/button3.png",
+                            "assets/buttons/button5.png",
+                            "assets/buttons/button8.png",
+                            "assets/buttons/button11.png",
+                            "assets/buttons/button10.png",
+                            "assets/buttons/button12.png"};
     int x, y;//coordenadas del mouse
     int cont = 0;
-    char *button[menuNum] = {"Play", "Settings", "Controls", "Exit"};//2 = cantidad de botones en el menu
     SDL_Rect pos[menuNum + 1];
-    DefinirTexturasMenu(texturas, paths, pos, button, color, &frame);
+    DefinirTexturasMenu(texturas, paths, pos, pathsButtons, color, &frame);
     SDL_Event event;
     int inMenu = 1, retorno = 0;
     while (inMenu) {
@@ -627,10 +618,10 @@ int Menu(SDL_Texture **texturas, SDL_Color *color) {
                     y = event.motion.y;
                     for (int i = 0; i < menuNum; i++) {
                         if (x >= pos[i].x && x <= pos[i].x + pos[i].w && y >= pos[i].y && y <= pos[i].y + pos[i].h) {
-                            texturas[i] = createButton(texturas[i], button[i], &color[1], &pos[i]);
+                            texturas[i] = createButton(texturas[i], pathsButtons[i + 4], &pos[i]);
                             continue;
                         } else {
-                            texturas[i] = createButton(texturas[i], button[i], &color[0], &pos[i]);
+                            texturas[i] = createButton(texturas[i], pathsButtons[i], &pos[i]);
                             continue;
                         }
                     }
@@ -674,10 +665,10 @@ int Menu(SDL_Texture **texturas, SDL_Color *color) {
             frame++;
             if (frame >= 26)
                 frame = 0;
-            texturas[4] = LoadTexture(texturas[4],paths[frame]);
+            texturas[4] = LoadTexture(texturas[4], paths[frame]);
 
         }
-        texturas[5] = LoadTexture(texturas[5],paths[(cont / 5) + 27]);
+        texturas[5] = LoadTexture(texturas[5], paths[27]);
         if (cont == 35)cont = 0;
         else cont += 1;
 
@@ -697,7 +688,15 @@ int pause(SDL_Texture **texturas) {
     //Uint32 time;
     int x, y;//coordenadas del mouse
 
-    char *button[menuNum] = {"Continue", "Settings", "Controls", "Main Menu"};//2 = cantidad de botones en el menu
+    char *button[] = {"assets/buttons/button6.png",
+                      "assets/buttons/button4.png",
+                      "assets/buttons/button3.png",
+                      "assets/buttons/button7.png",
+                      "assets/buttons/button13.png",
+                      "assets/buttons/button11.png",
+                      "assets/buttons/button10.png",
+                      "assets/buttons/button14.png",
+                      "assets/backrounds/pause.png"};
 
     SDL_Color color[2] = {{47,  227, 197, 255},
                           {233, 148, 58,  255}};
@@ -718,10 +717,10 @@ int pause(SDL_Texture **texturas) {
                     y = event.motion.y;
                     for (int i = 0; i < menuNum; i++) {
                         if (x >= pos[i].x && x <= pos[i].x + pos[i].w && y >= pos[i].y && y <= pos[i].y + pos[i].h) {
-                            texturas[i] = createButton(texturas[i], button[i], &color[1], &pos[i]);
+                            texturas[i] = createButton(texturas[i], button[i + 4], &pos[i]);
                             continue;
                         } else {
-                            texturas[i] = createButton(texturas[i], button[i], &color[0], &pos[i]);
+                            texturas[i] = createButton(texturas[i], button[i], &pos[i]);
                             continue;
                         }
                     }
@@ -737,7 +736,7 @@ int pause(SDL_Texture **texturas) {
                                     retorno = 1;
                                     break;
                                 case 1:
-                                    inPause = settings(texturas, color);
+                                    inPause = Puntajes(texturas, color);
                                     break;
                                 case 2:
                                     inPause = controls(texturas, color);
@@ -760,6 +759,7 @@ int pause(SDL_Texture **texturas) {
             }
         }
         SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer,texturas[4],NULL,NULL);
         for (int i = 0; i < menuNum; i++) {
             SDL_RenderCopy(renderer, texturas[i], NULL, &pos[i]);
         }
@@ -836,10 +836,10 @@ void UpdateBorde(Tablero *t, SDL_Texture **texturas, char *paths[], int *tick, i
                 *control -= 4;
                 break;
         }
-        texturas[0] = LoadTexture(texturas[0],paths[0 + *control]);
-        texturas[1] = LoadTexture(texturas[1],paths[3 + *control]);
-        texturas[2] = LoadTexture(texturas[2],paths[1 + *control]);
-        texturas[3] = LoadTexture(texturas[3],paths[2 + *control]);
+        texturas[0] = LoadTexture(texturas[0], paths[0 + *control]);
+        texturas[1] = LoadTexture(texturas[1], paths[3 + *control]);
+        texturas[2] = LoadTexture(texturas[2], paths[1 + *control]);
+        texturas[3] = LoadTexture(texturas[3], paths[2 + *control]);
         UpdateTablero(t, texturas);
         if (*control >= 24 || *control <= 0)
             *direccion *= -1;
@@ -849,16 +849,16 @@ void UpdateBorde(Tablero *t, SDL_Texture **texturas, char *paths[], int *tick, i
 void DetensionPieza(Tablero *t, Piezas *p) {
     for (int i = 0; i < 4; ++i) {
         Coor pos = PiezaPos(i, p);
-        t->pos[pos.y][pos.x] = p->images;
+        t->pos[(int)pos.y][(int)pos.x] = p->images;
     }
 }
 
 int HayColision(Tablero *t, Piezas *p, SDL_Texture **texturas) {
     for (int i = 0; i < 4; ++i) {
         Coor pos = PiezaPos(i, p);
-        if (t->pos[pos.y][pos.x] == texturas[0])
+        if (t->pos[(int)pos.y][(int)pos.x] == texturas[0])
             return 2;
-        if (t->pos[pos.y][pos.x] != NULL)
+        if (t->pos[(int)pos.y][(int)pos.x] != NULL)
             return 1;
     }
     return 0;
@@ -882,7 +882,7 @@ int onColision(Tablero *t, Piezas *p, Piezas *next, Piezas *aux, TableroPuntaje 
             tp->puntos += paux == 1 ? paux * 25 : paux * paux * 100;
             tp->lineasEliminadas += paux;
             *p = *next;
-            texturas[4] = LoadTexture(texturas[4],colors[rand() % 7]);
+            texturas[4] = LoadTexture(texturas[4], colors[rand() % 8]);
             CrearPieza(next, texturas[4]);
             p->central.x = 6;
             p->central.y = 1;
@@ -951,13 +951,18 @@ void
 Update(Tablero *t, Piezas *p, Piezas *next, SDL_Rect *rects, SDL_Texture **texturas, TableroPuntaje *tp) {
     texturas[8] = ImprimirNumeros(texturas[8], &rects[3], &tp->puntos, &blanco, tp->sPuntos);
     texturas[9] = ImprimirNumeros(texturas[9], &rects[4], &tp->lineasEliminadas, &blanco, tp->slineas);
+    rects[3].x = TAM*15 - (rects[3].w / 2);
+    rects[3].y = 310 - (rects[3].h / 2);
+    rects[4].x = TAM*15 - (rects[4].w / 2);
+    rects[4].y = 490 - (rects[4].h / 2);
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, texturas[10], NULL, &rects[5]);
+    SDL_RenderCopy(renderer,texturas[5],NULL,&rects[6]);
     DrawPlayGround(t); // ocupa x = 0 , x = WIDTH -1  y = HEIGHT -1
     DrawFigure(p);
     DrawFigure(next);
-    for (int i = 0; i < 5; ++i) {
-        SDL_RenderCopy(renderer, texturas[i + 5], NULL, &rects[i]);
+    for (int i = 0; i < 2; ++i) {
+        SDL_RenderCopy(renderer, texturas[i + 8], NULL, &rects[i + 3]);
     }
     SDL_RenderPresent(renderer);
     SDL_UpdateWindowSurface(screen);
@@ -970,9 +975,11 @@ void LeerRecords(FILE *file, Records *top10) {
     int recordAct = 0;
     while (!feof(file)) {
         fscanf(file, "%s %lld", top10[recordAct].nombre, &top10[recordAct].puntaje);
+        printf("lugar %d jugador %s, puntaje %lld\n",recordAct + 1,top10[recordAct].nombre,top10[recordAct].puntaje);
         recordAct++;
+
     }
-    fclose(file);
+
 }
 
 void
@@ -983,15 +990,13 @@ GameOver(SDL_Rect *rects, FILE *file, Records *top10, SDL_Event *event, SDL_Text
         new.nombre[i] = '\0';
     }
     texturas[5] = NULL;
-    texturas[5] = ImprimirTexto(texturas[5], &rects[4], "Game Over", &rojot, 60);
-    rects[4].x = (9 * TAM) - (rects[4].w / 2);
-    rects[4].y = 10;
+    texturas[5] = LoadTexture(texturas[5],"assets/backrounds/gameOver.png");
     texturas[6] = ImprimirNumeros(texturas[6], &rects[3], &tp->puntos, &blanco, tp->sPuntos);
     rects[3].x = 12 * TAM;
-    rects[3].y = 6 * TAM - rects[3].h / 2;
+    rects[3].y = 7 * TAM - rects[3].h / 2;
     texturas[7] = ImprimirTexto(texturas[7], &rects[1], "Puntaje Obtenido", &blanco, 30);
     rects[1].x = 2 * TAM;
-    rects[1].y = 6 * TAM - rects[1].h / 2;
+    rects[1].y = 7 * TAM - rects[1].h / 2;
     texturas[8] = ImprimirTexto(texturas[8], &rects[0], "Ingrese Nombre:", &blanco, 26);
     rects[0].x = 2 * TAM;
     rects[0].y = 10 * TAM - rects[0].h / 2;
@@ -1016,7 +1021,7 @@ GameOver(SDL_Rect *rects, FILE *file, Records *top10, SDL_Event *event, SDL_Text
                 }
         }
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, texturas[5], NULL, &rects[4]);
+        SDL_RenderCopy(renderer, texturas[5], NULL, NULL);
         SDL_RenderCopy(renderer, texturas[7], NULL, &rects[1]);
         SDL_RenderCopy(renderer, texturas[6], NULL, &rects[3]);
         SDL_RenderCopy(renderer, texturas[8], NULL, &rects[0]);
@@ -1049,15 +1054,22 @@ void UpdateRecords(FILE *file, Records *top10, Records *new) {
             }
 
         }
-        fclose(file);
     }
 
 
-    for (int i = 0; i < 10; i++)
-        fprintf(file, "%s %lld\n", top10[i].nombre, top10[i].puntaje);
+    for (int i = 0; i < 10; i++){
+        if(i == 0)
+            fprintf(file, "%s %lld", top10[i].nombre, top10[i].puntaje);
+        else{
+            fprintf(file,"%c",'\n');
+            fprintf(file, "%s %lld", top10[i].nombre, top10[i].puntaje);
+        }
+
+    }
+    fclose(file);
 }
 
-void Close(SDL_lTexture **textura) {
+void Close(SDL_Texture **textura) {
 
     for (int i = 0; i < 10; ++i) {
         SDL_DestroyTexture(textura[i]);
@@ -1072,8 +1084,8 @@ void Close(SDL_lTexture **textura) {
     SDL_Quit();
 }
 
-void CleanTextures (SDL_Texture **texturas){
-    for (int i = 0; i < 10 ; ++i) {
+void CleanTextures(SDL_Texture **texturas) {
+    for (int i = 0; i < 10; ++i) {
         SDL_DestroyTexture(texturas[i]);
         texturas[i] = NULL;
     }
