@@ -6,10 +6,10 @@
 // Created by tomasb on 7/2/20.
 //
 #include <stdio.h>
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-#include <SDL_mixer.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 #include <time.h>
 #include <string.h>
 
@@ -1216,7 +1216,7 @@ void UpdateRecords(FILE* file, Records* top10, Records* new)
     file = fopen("assets/record.txt", "w");
     if (new->puntaje > top10[0].puntaje)
     {
-        for (int k = 1; k < 10; ++k)
+        for (int k = 9; k > 0; --k)
         {
             top10[k] = top10[k - 1];
         }
