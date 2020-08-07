@@ -498,9 +498,10 @@ int Puntajes(SDL_Texture** texturas, SDL_Color* color)
                 retorno = 5;
                 inPuntaje = 0;//salir del menu puntaje
                 break;
-            case SDL_MOUSEMOTION://en caso de que el menu se mueva, se detecta la posicion y se establece como x e y.
-                x = event.motion.x;
-                y = event.motion.y;
+            case SDL_MOUSEMOTION://en caso de que el mouse se mueva, se detecta la posicion y se establece como x e y.
+                SDL_GetMouseState(&x, &y);
+               // x = event.motion.x;
+               // y = event.motion.y;
 
                 if (x >= pos.x && x <= pos.x + pos.w && y >= pos.y && y <= pos.y + pos.h)//si la posicion del mouse coincide con la de una textura(boton)
                 {
@@ -515,8 +516,9 @@ int Puntajes(SDL_Texture** texturas, SDL_Color* color)
 
                 break;
             case SDL_MOUSEBUTTONDOWN://si se hace click izquierdo con el mouse
-                x = event.button.x;
-                y = event.button.y;
+
+                //x = event.button.x;
+               // y = event.button.y;
 
                 if (x >= pos.x && x <= pos.x + pos.w && y >= pos.y && y <= pos.y + pos.h)//si la posicion del mouse coincide con la de una textura(boton)
                 {
@@ -580,9 +582,10 @@ int controls(SDL_Texture** texturas, SDL_Color* color)
                 inControl = 4;
                 retorno = 0;//salir del menu puntaje
                 break;
-            case SDL_MOUSEMOTION://en caso de que el menu se mueva, se detecta la posicion y se establece como x e y.
-                x = event.motion.x;
-                y = event.motion.y;
+            case SDL_MOUSEMOTION://en caso de que el mouse se mueva, se detecta la posicion y se establece como x e y.
+                SDL_GetMouseState(&x, &y);
+               // x = event.motion.x;
+               // y = event.motion.y;
                 for (int i = 0; i < 1; i++)
                 {
                     if (x >= pos[i].x && x <= pos[i].x + pos[i].w && y >= pos[i].y && y <= pos[i].y + pos[i].h)//si la posicion del mouse coincide con la de una textura(boton)
@@ -598,8 +601,9 @@ int controls(SDL_Texture** texturas, SDL_Color* color)
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN://si se hace click izquierdo con el mouse
-                x = event.button.x;
-                y = event.button.y;
+                SDL_GetMouseState(&x, &y);
+                //x = event.button.x;
+                //y = event.button.y;
                 for (int i = 0; i < buttonNum; i++)
                 {
                     if (x >= pos[i].x && x <= pos[i].x + pos[i].w && y >= pos[i].y && y <= pos[i].y + pos[i].h)//si la posicion del mouse coincide con la de una textura(boton)
@@ -706,9 +710,10 @@ int Menu(SDL_Texture** texturas, SDL_Color* color)
                 retorno = 5;//salir del menu puntaje
                 inMenu = 0;
                 break;
-            case SDL_MOUSEMOTION://en caso de que el menu se mueva, se detecta la posicion y se establece como x e y.
-                x = event.motion.x;
-                y = event.motion.y;
+            case SDL_MOUSEMOTION://en caso de que el mouse se mueva, se detecta la posicion y se establece como x e y.
+                SDL_GetMouseState(&x, &y);
+               // x = event.motion.x;
+               // y = event.motion.y;
                 for (int i = 0; i < menuNum; i++)
                 {
                     if (x >= pos[i].x && x <= pos[i].x + pos[i].w && y >= pos[i].y && y <= pos[i].y + pos[i].h)//si la posicion del mouse coincide con la de una textura(boton)
@@ -724,8 +729,9 @@ int Menu(SDL_Texture** texturas, SDL_Color* color)
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN://si se hace click izquierdo con el mouse
-                x = event.button.x;
-                y = event.button.y;
+                SDL_GetMouseState(&x, &y);
+                //x = event.button.x;
+                //y = event.button.y;
                 for (int i = 0; i < menuNum; i++)
                 {
                     if (x >= pos[i].x && x <= pos[i].x + pos[i].w && y >= pos[i].y && y <= pos[i].y + pos[i].h)//si la posicion del mouse coincide con la de una textura(boton)
@@ -831,9 +837,10 @@ int pause(SDL_Texture** texturas)
                 retorno = 5;
                 inPause = 0;//salir del menu de pausa
                 break;
-            case SDL_MOUSEMOTION://en caso de que el menu se mueva, se detecta la posicion y se establece como x e y.
-                x = event.motion.x;
-                y = event.motion.y;
+            case SDL_MOUSEMOTION://en caso de que el mouse se mueva, se detecta la posicion y se establece como x e y.
+                SDL_GetMouseState(&x, &y);
+                //x = event.motion.x;
+               // y = event.motion.y;
                 for (int i = 0; i < menuNum; i++)
                 {
                     if (x >= pos[i].x && x <= pos[i].x + pos[i].w && y >= pos[i].y && y <= pos[i].y + pos[i].h)//si la posicion del mouse coincide con la de una textura(boton)
@@ -849,8 +856,9 @@ int pause(SDL_Texture** texturas)
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN://si se hace click izquierdo con el mouse
-                x = event.button.x;
-                y = event.button.y;
+                SDL_GetMouseState(&x, &y);
+                //x = event.button.x;
+                //y = event.button.y;
                 for (int i = 0; i < menuNum; i++)
                 {
                     if (x >= pos[i].x && x <= pos[i].x + pos[i].w && y >= pos[i].y && y <= pos[i].y + pos[i].h)//si la posicion del mouse coincide con la de una textura(boton)
