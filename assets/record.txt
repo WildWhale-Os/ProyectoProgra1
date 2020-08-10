@@ -1,4 +1,6 @@
 tomas 2625
+diego 2025
+tomas 200
 tomas 100
 riven 90
 loffi 80
@@ -6,5 +8,3 @@ lol 70
 ekko 60
 mir 50
 ya 40
-jajaja 30
-fifi 20

@@ -1201,6 +1201,13 @@ void GameOver(SDL_Rect* rects, FILE* file, Records* top10, SDL_Event* event, SDL
             else if (event->type == SDL_KEYDOWN)
                 switch (event->key.keysym.sym)
                 {
+                case SDLK_BACKSPACE:
+                    if(strlen(new.nombre) > 0)
+                    {
+                        new.nombre[strlen(new.nombre) - 1] = '\0';
+                        texturas[9] = ImprimirTexto(texturas[9], &rects[2], new.nombre, &blanco, 26);
+                    }
+                    break;
                 case SDLK_RSHIFT:
                     inputName = 0;
                     break;
