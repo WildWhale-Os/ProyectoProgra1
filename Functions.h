@@ -6,84 +6,12 @@
 // Created by tomasb on 7/2/20.
 //
 #include <stdio.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_mixer.h>
 #include <time.h>
 #include <string.h>
+#include "static.h"
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
-#define TAM 40
-#define WIDTH 12
-#define HEIGHT 17
-#define menuNum 4
-#define buttonNum 4
-
-SDL_Window* screen = NULL;
-SDL_Renderer* renderer = NULL;
-SDL_Color blanco = { 255, 255, 255, 255 };
-Mix_Music* bgm; //coment: declaramos las variables que guardaran la musica y efectos de sonido
-Mix_Music* GO;
-Mix_Chunk* sfx;
-Mix_Chunk* bot;
-Mix_Chunk* bot2;
-Mix_Chunk* pausa;
-
-int VolM = 20; //coment declaramos el volumen
-int mute = 0;  //coment declaramos una variable para silenciar el audio
-
-char* colors[] = { "assets/Block1.png",
-                  "assets/Block2.png",
-                  "assets/Block3.png",
-                  "assets/Block4.png",
-                  "assets/Block5.png",
-                  "assets/Block6.png",
-                  "assets/Block7.png",
-                  "assets/Block8.png" };
-
-typedef struct
-{
-    SDL_Texture* pos[HEIGHT][WIDTH];
-} Tablero;
-
-typedef struct
-{
-    double x;
-    double y;
-} Coor;
-
-typedef struct
-{
-    Coor central;
-    Coor laterales[3];
-    SDL_Texture* images;
-
-} Piezas;
-
-typedef struct
-{
-    char nombre[30];
-    long long puntaje;
-} Records;
-
-typedef struct
-{
-    char* sPuntos;
-    long long puntos;
-    long long lineasEliminadas;
-    char* slineas;
-} TableroPuntaje;
-
-Coor Tetraminos[][3] = {
-    {{0, -1}, {0, 1}, {1, 1}},  //L
-    {{-1, 0}, {0, 1}, {1, 0}},  //T
-    {{0, -1}, {0, 1}, {-1, 1}}, // L inversa
-    {{1, 0}, {0, 1}, {1, 1}},   // cuadradro
-    {{-1, 0}, {0, 1}, {1, 1}},  // Z
-    {{-1, 1}, {0, 1}, {1, 0}},  // Z Inversa
-    {{0, -1}, {0, 1}, {0, 2}},  // |
-
-};
 
 void Init();
 
@@ -478,7 +406,6 @@ SDL_Texture* createButton(SDL_Texture* menus, char* button, SDL_Rect* pos)
 
 int Puntajes(SDL_Texture** texturas, SDL_Color* color)
 {
-    
     int x, y; //variables de coordenadas del mouse 
     char* paths = "assets/backrounds/s1.png";//string a path del backround
     char* button[] = { "assets/buttons/button15.png",//arreglo de string a path de los botones en uso
@@ -500,8 +427,6 @@ int Puntajes(SDL_Texture** texturas, SDL_Color* color)
                 break;
             case SDL_MOUSEMOTION://en caso de que el mouse se mueva, se detecta la posicion y se establece como x e y.
                 SDL_GetMouseState(&x, &y);
-               // x = event.motion.x;
-               // y = event.motion.y;
 
                 if (x >= pos.x && x <= pos.x + pos.w && y >= pos.y && y <= pos.y + pos.h)//si la posicion del mouse coincide con la de una textura(boton)
                 {
@@ -544,8 +469,7 @@ int Puntajes(SDL_Texture** texturas, SDL_Color* color)
         else
             cont += 1;
         SDL_RenderClear(renderer);//se limpia el renderizador
-        SDL_RenderCopy(renderer, texturas[menuNum], NULL, NULL);//se presentan las texturas del fondo al renderizador
-
+        SDL_RenderCopy(renderer, texturas[1], NULL, NULL);//se presentan las texturas del fondo al renderizador
         SDL_RenderCopy(renderer, texturas[0], NULL, &pos);//se presentan las texturas de los botones al renderizador
 
         SDL_RenderPresent(renderer);//se presenta el renderizador
@@ -775,13 +699,13 @@ int Menu(SDL_Texture** texturas, SDL_Color* color)
                 break;
             }
         }
-        if (cont % 2 == 0)//cambio de textura del fondo
-        {
-            frame++;//segun el contador frame
-            if (frame >= 26)
-                frame = 0;
-            texturas[4] = LoadTexture(texturas[4], paths[frame]);//animacion del titulo con  cambio de textura
-        }
+        // if (cont % 2 == 0)//cambio de textura del fondo
+        // {
+        //     frame++;//segun el contador frame
+        //     if (frame >= 26)
+        //         frame = 0;
+        //     texturas[4] = LoadTexture(texturas[4], paths[frame]);//animacion del titulo con  cambio de textura
+        // }
         texturas[5] = LoadTexture(texturas[5], paths[27]);//textura del fondo
         if (cont == 35)
             cont = 0;
