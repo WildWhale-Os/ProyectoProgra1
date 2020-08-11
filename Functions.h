@@ -78,7 +78,7 @@ void Update(Tablero* t, Piezas* p, Piezas* next, SDL_Rect* rects, SDL_Texture* t
 
 void LeerRecords(FILE* file, Records* top10);
 
-void GameOver(SDL_Rect* rects, FILE* file, Records* top10, SDL_Event* event, SDL_Texture* texturas[], TableroPuntaje* tp);
+int GameOver(SDL_Rect* rects, FILE* file, Records* top10, SDL_Event* event, SDL_Texture* texturas[], TableroPuntaje* tp);
 
 void UpdateRecords(FILE* file, Records* top10, Records* new);
 
@@ -174,6 +174,11 @@ int play(SDL_Texture** texturas)
             play = onColision(&t, &p, &next, &aux, &tp, top10, texturas, rects, &event, &down, records);
             if (!play)
                 retorno = 1;
+            if (play == -1)
+            {
+                retorno = -1;
+                play = 0;
+            }
             if (play)
             {
                 Update(&t, &p, &next, rects, texturas, &tp);
@@ -958,8 +963,7 @@ int onColision(Tablero* t, Piezas* p, Piezas* next, Piezas* aux, TableroPuntaje*
         {
             if ((PiezaPos(i, p).y <= 0 || p->central.y == 1) && HayColision(t, p, texturas) == 1)
             {
-                GameOver(rects, records, top10, event, texturas, tp);
-                return 0;
+                return GameOver(rects, records, top10, event, texturas, tp);
                 break;
             }
         }
@@ -1082,7 +1086,7 @@ void LeerRecords(FILE* file, Records* top10)
     }
 }
 
-void GameOver(SDL_Rect* rects, FILE* file, Records* top10, SDL_Event* event, SDL_Texture* texturas[], TableroPuntaje* tp)
+int GameOver(SDL_Rect* rects, FILE* file, Records* top10, SDL_Event* event, SDL_Texture* texturas[], TableroPuntaje* tp)
 {
     Mix_VolumeMusic(VolM); //coment le otorgamos valor al volumen de la musica de game over
     Mix_PlayMusic(GO, -1); //coment reproducimos la musica de game over
@@ -1107,7 +1111,7 @@ void GameOver(SDL_Rect* rects, FILE* file, Records* top10, SDL_Event* event, SDL
     texturas[9] = ImprimirTexto(texturas[9], &rects[2], new.nombre, &blanco, 26);
     rects[2].x = 12 * TAM;
     rects[2].y = 10 * TAM - rects[2].h / 2;
-    int inputName = 1;
+    int inputName = 1, retorno = -1;
     while (inputName)
     {
         while (SDL_PollEvent(event) != 0)
@@ -1132,8 +1136,10 @@ void GameOver(SDL_Rect* rects, FILE* file, Records* top10, SDL_Event* event, SDL
                         texturas[9] = ImprimirTexto(texturas[9], &rects[2], new.nombre, &blanco, 26);
                     }
                     break;
-                case SDLK_RSHIFT:
+                case SDLK_KP_ENTER:
                     inputName = 0;
+                    retorno = 0;
+                    SDL_StopTextInput();
                     break;
                 }
         }
@@ -1147,7 +1153,8 @@ void GameOver(SDL_Rect* rects, FILE* file, Records* top10, SDL_Event* event, SDL
         SDL_UpdateWindowSurface(screen);
     }
     UpdateRecords(file, top10, &new);
-    SDL_StopTextInput();
+    return retorno;
+    
 }
 
 void UpdateRecords(FILE* file, Records* top10, Records* new)
