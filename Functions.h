@@ -1136,7 +1136,7 @@ int GameOver(SDL_Rect* rects, FILE* file, Records* top10, SDL_Event* event, SDL_
                         texturas[9] = ImprimirTexto(texturas[9], &rects[2], new.nombre, &blanco, 26);
                     }
                     break;
-                case SDLK_KP_ENTER:
+                case SDLK_RSHIFT:
                     inputName = 0;
                     retorno = 0;
                     SDL_StopTextInput();
