@@ -1010,7 +1010,8 @@ int CountDown(Tetris *game, SDL_Texture **texturas,SDL_Rect *rects)
     SDL_Rect pos;
     long long time = 5;
     char sNum[2] ={ '\0' };
-    SDL_Texture *texto = ImprimirNumeros(texto, &pos, &time, &blanco, sNum, 100);
+    SDL_Texture *texto = NULL;
+    texto = ImprimirNumeros(texto, &pos, &time, &blanco, sNum, 100);
     pos.x = TAM * 9 - pos.w/2;
     pos.y = (TAM *HEIGHT)/2 - pos.h/2;
     int preGame = 1, retorno = 1;
