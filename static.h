@@ -13,6 +13,7 @@
 SDL_Window* screen = NULL;
 SDL_Renderer* renderer = NULL;
 SDL_Color blanco ={ 255, 255, 255, 255 };
+SDL_Color blancoC ={ 255, 255, 255, 255 };
 Mix_Music* bgm; //coment: declaramos las variables que guardaran la musica y efectos de sonido
 Mix_Music* GO;
 Mix_Chunk* sfx;
