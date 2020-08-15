@@ -1,4 +1,5 @@
 WildWhale 6150
+tomas 3050
 Jakka 2650
 tomas 2625
 tomas 2450
@@ -7,4 +8,3 @@ tomas 1675
 tomas 1475
 tomas 1450
 tomas 1425
-tomas 1125
