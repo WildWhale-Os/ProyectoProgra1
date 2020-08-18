@@ -941,8 +941,10 @@ void UpdateRecords(FILE* file, Records* top10, Records* new)
     fclose(file);
 }
 
-int GameOver(SDL_Rect* rects, Tetris* game, SDL_Event* event, SDL_Texture* texturas[])
+int GameOver(Tetris* game)
 {
+    SDL_Texture *texturas[4];
+    SDL_Rect rects[4];
     Mix_VolumeMusic(VolM); //coment le otorgamos valor al volumen de la musica de game over
     Mix_PlayMusic(GO, -1); //coment reproducimos la musica de game over
     SDL_StartTextInput();
@@ -956,47 +958,48 @@ int GameOver(SDL_Rect* rects, Tetris* game, SDL_Event* event, SDL_Texture* textu
     {
         new.nombre[i] = '\0';
     }
-    texturas[6] = ImprimirNumeros(texturas[6], &rects[3], &game->score.puntos, &blanco, game->score.sPuntos, 28);
-    rects[3].x = 12 * TAM;
-    rects[3].y = 7 * TAM - rects[3].h / 2;
-    texturas[7] = ImprimirTexto(texturas[7], &rects[1], "Puntaje Obtenido", &blanco, 30);
+    texturas[0] = ImprimirNumeros(texturas[0], &rects[0], &game->score.puntos, &blanco, game->score.sPuntos, 28);
+    rects[0].x = 12 * TAM;
+    rects[0].y = 7 * TAM - rects[0].h / 2;
+    texturas[1] = ImprimirTexto(texturas[1], &rects[1], "Puntaje Obtenido", &blanco, 30);
     rects[1].x = 2 * TAM;
     rects[1].y = 7 * TAM - rects[1].h / 2;
-    texturas[8] = ImprimirTexto(texturas[8], &rects[0], "Ingrese Nombre:", &blanco, 26);
-    rects[0].x = 2 * TAM;
-    rects[0].y = 10 * TAM - rects[0].h / 2;
-    new.puntaje = game->score.puntos;
-    texturas[9] = ImprimirTexto(texturas[9], &rects[2], new.nombre, &blanco, 26);
-    rects[2].x = 12 * TAM;
+    texturas[2] = ImprimirTexto(texturas[2], &rects[2], "Ingrese Nombre:", &blanco, 26);
+    rects[2].x = 2 * TAM;
     rects[2].y = 10 * TAM - rects[2].h / 2;
+    new.puntaje = game->score.puntos;
+    texturas[3] = ImprimirTexto(texturas[3], &rects[3], new.nombre, &blanco, 26);
+    rects[3].x = 12 * TAM;
+    rects[3].y = 10 * TAM - rects[3].h / 2;
     int inputName = 1, retorno = -1, cont = 0, lessOne = -1;
+    SDL_Event event;
     while (inputName)
     {
-        while (SDL_PollEvent(event) != 0)
+        while (SDL_PollEvent(&event) != 0)
         {
-            if (event->type == SDL_QUIT)
+            if (event.type == SDL_QUIT)
             {
                 inputName = 0;
                 break;
             }
-            else if (event->type == SDL_TEXTINPUT)
+            else if (event.type == SDL_TEXTINPUT)
             {
-                strcat(new.nombre, event->text.text);
-                texturas[9] = ImprimirTexto(texturas[9], &rects[2], new.nombre, &blanco, 26);
+                strcat(new.nombre, event.text.text);
+                texturas[3] = ImprimirTexto(texturas[3], &rects[3], new.nombre, &blanco, 26);
             }
-            else if (event->type == SDL_KEYDOWN)
-                switch (event->key.keysym.sym)
+            else if (event.type == SDL_KEYDOWN)
+                switch (event.key.keysym.sym)
                 {
                 case SDLK_BACKSPACE:
                     if (strlen(new.nombre) > 0)
                     {
                         new.nombre[strlen(new.nombre) - 1] = '\0';
-                        texturas[9] = ImprimirTexto(texturas[9], &rects[2], new.nombre, &blanco, 26);
+                        texturas[3] = ImprimirTexto(texturas[3], &rects[3], new.nombre, &blanco, 26);
                     }
                     break;
                 case SDLK_RSHIFT:
                     inputName = 0;
-                    retorno = 0;
+                    retorno = 1;
                     SDL_StopTextInput();
                     break;
                 }
@@ -1014,16 +1017,19 @@ int GameOver(SDL_Rect* rects, Tetris* game, SDL_Event* event, SDL_Texture* textu
 
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, game->fondos[4], NULL, NULL);
-        SDL_RenderCopy(renderer, texturas[7], NULL, &rects[1]);
-        SDL_RenderCopy(renderer, texturas[6], NULL, &rects[3]);
-        SDL_RenderCopy(renderer, texturas[8], NULL, &rects[0]);
-        SDL_RenderCopy(renderer, texturas[9], NULL, &rects[2]);
+        SDL_RenderCopy(renderer, texturas[0], NULL, &rects[0]);
+        SDL_RenderCopy(renderer, texturas[1], NULL, &rects[1]);
+        SDL_RenderCopy(renderer, texturas[2], NULL, &rects[2]);
+        SDL_RenderCopy(renderer, texturas[3], NULL, &rects[3]);
         SDL_RenderCopy(renderer, textoS, NULL, &pos);
         SDL_RenderPresent(renderer);
         SDL_UpdateWindowSurface(screen);
     }
     UpdateRecords(game->DB, game->top10, &new);
     blancoC.a = 255;
+    CleanTextures(texturas,4);
+    free(game->score.sPuntos);
+    free(game->score.slineas);
     return retorno;
 }
 
@@ -1135,8 +1141,7 @@ int onColision(Tetris* game, Piezas* aux,
         {
             if ((PiezaPos(i, &game->actFigure).y <= 0 || game->actFigure.central.y == 1) && HayColision(&game->tablero, &game->actFigure, texturas) == 1)
             {
-                return GameOver(rects, game, event, texturas);
-                break;
+                return 0;
             }
         }
         if (HayColision(&game->tablero, &game->actFigure, texturas) != 2 && *down)
@@ -1237,12 +1242,7 @@ int play(Tetris* game)
             }
             play = onColision(game, &aux, images, rects, &event, &down);
             if (!play)
-                retorno = 1;
-            if (play == -1)
-            {
-                retorno = -1;
-                play = 0;
-            }
+                retorno = 2;
             if (play)
             {
                 Update(game, rects, images);
@@ -1252,8 +1252,6 @@ int play(Tetris* game)
         }
     }
     CleanTextures(images, 10);
-    free(game->score.sPuntos);
-    free(game->score.slineas);
     return retorno;
 }
 

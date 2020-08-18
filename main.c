@@ -16,6 +16,10 @@ int main(int argc, char *argv[]) {
         case 1:
             opcion = Menu(&game);
             break;
+        
+        case 2:
+            opcion = GameOver(&game);
+            break;
 
         default:
             tetris = 0;
