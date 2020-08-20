@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
+#include <SDL.h>
+#include <SDL_mixer.h>
 
 
 #define TAM 40
@@ -12,8 +12,8 @@
 
 SDL_Window* screen = NULL;
 SDL_Renderer* renderer = NULL;
-SDL_Color blanco ={ 255, 255, 255, 255 };
-SDL_Color blancoC ={ 255, 255, 255, 255 };
+SDL_Color blanco = { 255, 255, 255, 255 };
+SDL_Color blancoC = { 255, 255, 255, 255 };
 Mix_Music* bgm; //coment: declaramos las variables que guardaran la musica y efectos de sonido
 Mix_Music* GO;
 Mix_Chunk* sfx;
@@ -24,7 +24,7 @@ Mix_Chunk* pausa;
 int VolM = 20; //coment declaramos el volumen
 int mute = 0;  //coment declaramos una variable para silenciar el audio
 
-char* colors[] ={
+char* colors[] = {
     "assets/Cubos/Block1.png",
     "assets/Cubos/Block2.png",
     "assets/Cubos/Block3.png",
@@ -68,14 +68,14 @@ typedef struct
     char* slineas;
 } TableroPuntaje;
 
-Coor Tetraminos[][3] ={
+Coor Tetraminos[][3] = {
     { { 0, -1 }, { 0, 1 }, { 1, 1 } },  //L
     { { -1, 0 }, { 0, 1 }, { 1, 0 } },  //T
     { { 0, -1 }, { 0, 1 }, { -1, 1 } }, // L inversa
     { { 1, 0 }, { 0, 1 }, { 1, 1 } },   // cuadradro
     { { -1, 0 }, { 0, 1 }, { 1, 1 } },  // Z
     { { -1, 1 }, { 0, 1 }, { 1, 0 } },  // Z Inversa
-    { { 0, -1 }, { 0, 1 }, { 0, 2 } },  // |
+    { { -1, 0 }, { 1, 0 }, { 2, 0 } },  // |
 
 };
 
@@ -83,9 +83,9 @@ typedef struct
 {
     Tablero tablero;
     TableroPuntaje score;
-    FILE *DB;
+    FILE* DB;
     Records top10[10];
     Piezas actFigure;
     Piezas nextFigure;
-    SDL_Texture *fondos[6];
+    SDL_Texture* fondos[9];
 } Tetris;
