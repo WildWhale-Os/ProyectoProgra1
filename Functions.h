@@ -31,9 +31,9 @@ void Init()
     bgm = Mix_LoadMUS("assets/Music/vitality.mp3");
     pausa = Mix_LoadWAV("assets/Music/bgm.wav");
     GO = Mix_LoadMUS("assets/Music/det.mp3");
-    Mix_AllocateChannels(4); //definimos 3 canales;
+    // Mix_AllocateChannels(4); //definimos 3 canales;
     Mix_VolumeChunk(pausa, VolM);
-    Mix_PlayChannel(3, pausa, -1);
+    Mix_PlayChannel(-1, pausa, -1);
 }
 
 void CleanTextures(SDL_Texture **texturas, int num)
@@ -277,6 +277,8 @@ void DrawFigure(Piezas *pieza)
 int Puntajes(Tetris *game)
 {
     SDL_Texture *images[21];
+    if (Mix_Paused(0))
+        Mix_Resume(0);
     int x, y;                                          //variables de coordenadas del mouse
     char *button[] = {"assets/buttons/button15.png",   //arreglo de string a path de los botones en uso
                       "assets/buttons/button16.png"};  //2 = cantidad de botones en el menu
@@ -318,7 +320,7 @@ int Puntajes(Tetris *game)
                 if (x >= pos[0].x && x <= pos[0].x + pos[0].w && y >= pos[0].y && y <= pos[0].y + pos[0].h) //si la posicion del mouse coincide con la de una textura(boton)
                 {
                     Mix_VolumeChunk(bot2, VolM); // agregamos sonido a los botones mientras se esta en la configuracion
-                    Mix_PlayChannel(2, bot2, 0);
+                    Mix_PlayChannel(-1, bot2, 0);
                     retorno = 1; //se devuelve 1 al main lo que significa volver al menu principal
                     inPuntaje = 0;
                 }
@@ -346,11 +348,14 @@ int Puntajes(Tetris *game)
         SDL_UpdateWindowSurface(screen); //se recarga la superficie
     }
     CleanTextures(images, 20);
+    Mix_Pause(0);
     return retorno; //se devuelve el valor dependiendo de lo seleccionado en el event loop
 }
 
 int controls()
 {
+    if (Mix_Paused(0))
+        Mix_Resume(0);
     SDL_Texture *fondo = NULL;
     SDL_Texture *button = NULL;
     int x, y;                                    //coordenadas del mouse
@@ -408,7 +413,7 @@ int controls()
                         {
                         case 0:
                             Mix_VolumeChunk(bot2, VolM); // agregamos efecto de sonido a los botones mientras se esta en controles
-                            Mix_PlayChannel(2, bot2, 0);
+                            Mix_PlayChannel(-1, bot2, 0);
                             retorno = 1; //se devuelve 1 al main lo que significa volver al menu principal
                             inControl = 0;
                             break;
@@ -440,6 +445,7 @@ int controls()
     }
     SDL_DestroyTexture(fondo);
     SDL_DestroyTexture(button);
+    Mix_Pause(0);
     return retorno; //se devuelve el valor dependiendo de lo seleccionado en el event loop
 }
 
@@ -447,10 +453,12 @@ int Menu(Tetris *game)
 {
     int frame = 0;
     SDL_Texture *images[menuNum + 1] = {NULL};
-    Mix_PauseMusic();             //se pausas el tema de juego
+    //Mix_PauseMusic();             //se pausas el tema de juego
     Mix_VolumeChunk(pausa, VolM); // se reproduce el tema del menu
-    if (Mix_Paused(3))            // se reproduce si no esta sonando ya
-        Mix_Resume(3);
+    // if (Mix_Paused(3))            // se reproduce si no esta sonando ya
+    //     Mix_Resume(3);
+    if (Mix_Paused(0))
+        Mix_Resume(0);
 
     char *paths[] = {
         //arreglo de string a path de las imagenes del titulo  y el fondo en uso
@@ -540,26 +548,31 @@ int Menu(Tetris *game)
                         {
                         case 0:
                             Mix_VolumeChunk(bot, VolM); //se agrega efectos de sonido a los botones del menu
-                            Mix_PlayChannel(2, bot, 0);
-                            Mix_Pause(3);
+                            Mix_PlayChannel(-1, bot, 0);
+                            Mix_Pause(0);
                             retorno = 0;
                             inMenu = 0;
                             break;
                         case 1:
                             Mix_VolumeChunk(bot2, VolM); //se agrega  efectos de sonido a los botones del menu
-                            Mix_PlayChannel(2, bot2, 0);
+                            Mix_PlayChannel(-1, bot2, 0);
+                            Mix_Pause(0);
                             inMenu = 0;
                             retorno = Puntajes(game);
+                            Mix_Resume(0);
                             break;
                         case 2:
                             Mix_VolumeChunk(bot2, VolM); //se agrega efectos de sonido a los botones del menu
-                            Mix_PlayChannel(2, bot2, 0);
+                            Mix_PlayChannel(-1, bot2, 0);
+                            Mix_Pause(0);
                             inMenu = 0;
                             retorno = controls();
+                            Mix_Resume(0);
                             break;
                         case 3:
                             Mix_VolumeChunk(bot2, VolM); //se agrega efectos de sonido a los botones del menu
-                            Mix_PlayChannel(2, bot2, 0);
+                            Mix_PlayChannel(-1, bot2, 0);
+                            Mix_Pause(0);
                             retorno = 4;
                             inMenu = 0;
                             break;
@@ -604,8 +617,9 @@ int Menu(Tetris *game)
 
 int pause(SDL_Texture **texturas, Tetris *game)
 {
-    int x, y;                                       //coordenadas del mouse
-    Mix_PlayChannel(1, pausa, -1);                  //se reproduce la musica de pausa
+    int x, y;
+    Mix_VolumeChunk(pausa, VolM);                   //coordenadas del mouse
+    Mix_Resume(0);                                  //se reproduce la musica de pausa
     char *button[] = {"assets/buttons/button6.png", //arreglo de string a path de las imagenes del fondo y los botnes
                       "assets/buttons/button4.png",
                       "assets/buttons/button3.png",
@@ -625,16 +639,16 @@ int pause(SDL_Texture **texturas, Tetris *game)
     while (inPause)                                     //mientras este en el menu de pausa
     {
         // Mix_PauseMusic();             //coment dejamos de reproducir el tema de juego
-        Mix_VolumeChunk(pausa, VolM); //definimos el volumen del chunk "pausa"
-        if (Mix_Paused(3))
-            Mix_Resume(3); //reproducimos el tema de pausa/menu si no esta sonando ya
+        // Mix_VolumeChunk(pausa, VolM); //definimos el volumen del chunk "pausa"
+        // if (Mix_Paused(3))
+        //     Mix_Resume(3); //reproducimos el tema de pausa/menu si no esta sonando ya
 
         while (SDL_PollEvent(&event)) //mientas el evento "event" este activo
         {
             switch (event.type)
             {
             case SDL_QUIT: //en caso de apretar la x, se devuelve 5 al main (lo que hace que se cierre el juego)
-                retorno = 5;
+                retorno = -1;
                 inPause = 0; //salir del menu de pausa
                 break;
             case SDL_MOUSEMOTION: //en caso de que el mouse se mueva, se detecta la posicion y se establece como x e y.
@@ -666,21 +680,26 @@ int pause(SDL_Texture **texturas, Tetris *game)
                         switch (i)
                         {
                         case 0:
-                            Mix_PlayChannel(2, bot, 0); // le damos efectos de sonido a los botones del menu de pausa
-                            Mix_Pause(3);
+                            Mix_PlayChannel(-1, bot, 0); // le damos efectos de sonido a los botones del menu de pausa
+                            Mix_Pause(0);
                             inPause = 0;
                             retorno = 1;
                             break;
                         case 1:
-                            Mix_PlayChannel(2, bot2, 0);
+                            Mix_PlayChannel(-1, bot2, 0);
+                            Mix_Pause(0);
                             inPause = Puntajes(game);
+                            Mix_Resume(0);
                             break;
                         case 2:
-                            Mix_PlayChannel(2, bot2, 0);
+                            Mix_PlayChannel(-1, bot2, 0);
+                            Mix_Pause(0);
                             inPause = controls();
+                            Mix_Resume(0);
                             break;
                         case 3:
-                            Mix_PlayChannel(2, bot2, 0);
+                            Mix_PlayChannel(-1, bot2, 0);
+                            Mix_Pause(0);
                             retorno = 0;
                             inPause = 0;
                             break;
@@ -693,6 +712,7 @@ int pause(SDL_Texture **texturas, Tetris *game)
                 {
                     retorno = 1; //Exit
                     inPause = 0;
+                    Mix_Pause(0);
                 }
                 break;
             }
@@ -846,6 +866,8 @@ void EliminarFila(Tablero *t, int fila)
     {
         t->pos[0][x] = NULL;
     }
+    Mix_VolumeChunk(sfx, VolM / 2);
+    Mix_PlayChannel(2, sfx, 0); //coment agregamos efecto de sonido a la eliminacion de una fila
 }
 
 int LineasELiminadas(Tablero *t)
@@ -1005,6 +1027,7 @@ int GameOver(Tetris *game)
                     inputName = 0;
                     retorno = 1;
                     SDL_StopTextInput();
+                    Mix_PauseMusic();
                     break;
                 }
                 break;
@@ -1188,14 +1211,15 @@ int play(Tetris *game)
     SDL_Event event;
     Update(game, rects, images);
     int play = BeforeGame(game, images, rects), tick = 0, down = 0, control = 0, direccion = 1, retorno = -1;
+    Mix_VolumeMusic(VolM);
+    Mix_PlayMusic(bgm, -1);
     while (play)
-    {
-        Mix_Pause(1);          //coment pausamos el tema del menu
-        Mix_VolumeMusic(VolM); //coment reproducimos el tema de juego
-        if (Mix_PlayingMusic() == 0)
-        {                           //hacemos que se reproduzca si no esta sonando
-            Mix_PlayMusic(bgm, -1); //coment el -1 es para que se reproduzca infinitamente
-        }
+    {        //coment pausamos el tema del menu
+        // Mix_VolumeMusic(VolM); //coment reproducimos el tema de juego
+        // if (Mix_PlayingMusic() == 0)
+        // {                           //hacemos que se reproduzca si no esta sonando
+        //     Mix_PlayMusic(bgm, -1); //coment el -1 es para que se reproduzca infinitamente
+        // }
         Piezas aux = game->actFigure;
         while (SDL_PollEvent(&event) != 0)
         {
@@ -1233,6 +1257,21 @@ int play(Tetris *game)
                     }
                     else
                         Mix_ResumeMusic();
+                case SDLK_MINUS: //coment asignamos la tecla de '-' para bajar volumen
+                    VolM--;
+                    break;
+                case SDLK_PLUS: //coment asignamos la tecla '+' para subir el volumen
+                    VolM++;
+                    break;
+                case SDLK_m: //coment asignamos la tecla m para silenciar el audio
+                    if (VolM != 0)
+                    {
+                        mute = VolM; //si el volumen en ese momento no es 0, el valor del volumen se guardara en mute y luego pasara a ser 0
+                        VolM = 0;
+                    }
+                    else
+                        VolM = mute; //si es 0, se cambiara por el valor de mute
+                    break;
                 }
             }
         }
@@ -1240,11 +1279,14 @@ int play(Tetris *game)
         {
             if (tick % 10 == 0)
                 UpdateBorde(&game->tablero, images, paths, &tick, &control, &direccion);
-            if (tick % 20 == 0)
+            if (!down)
             {
-                game->actFigure.central.y++;
-                tick = 0;
-                down = 1;
+                if (tick % 20 == 0)
+                {
+                    game->actFigure.central.y++;
+                    tick = 0;
+                    down = 1;
+                }
             }
             play = onColision(game, &aux, images, rects, &event, &down);
             if (!play)
@@ -1256,6 +1298,7 @@ int play(Tetris *game)
                 tick++;
             }
         }
+        down = 0;
     }
     CleanTextures(images, 10);
     return retorno;
