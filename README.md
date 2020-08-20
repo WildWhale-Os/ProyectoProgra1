@@ -1,6 +1,8 @@
 # ProyectoProgra1
--El archivo main.c es el codigo que genera una ventana y dibuja la zona de juego eso si solo dibuja
-los cuadradros pero no genera una red.
 
--El archivo test.c archivo con programa principal tetris con full funcionalidad exceptuando por menu y
-un reinicio automatico del juego 
+-Archivo main.c esqueleto base de toda la aplicacion
+-Function.h archivo con todas las funciones que hacen funcionar el programa
+-Static.h archivo con todas las struct y variables globales que el programa necesita
+# Ultima Version
+
+- Problema de reproduccion de audio arreglados
