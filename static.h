@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL.h>
-#include <SDL_mixer.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 
 
 #define TAM 40
@@ -10,8 +10,6 @@
 #define menuNum 4
 #define buttonNum 4
 #define delta 1e-10
-
-int combo = 4;
 
 SDL_Window* screen = NULL;
 SDL_Renderer* renderer = NULL;
@@ -24,6 +22,7 @@ Mix_Chunk* bot;
 Mix_Chunk* bot2;
 Mix_Chunk* pausa;
 
+int combo = 4;
 int VolM = 20; //coment declaramos el volumen
 int mute = 0;  //coment declaramos una variable para silenciar el audio
 
