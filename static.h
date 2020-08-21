@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
+#include <SDL.h>
+#include <SDL_mixer.h>
 
 
 #define TAM 40
@@ -9,6 +9,9 @@
 #define HEIGHT 17
 #define menuNum 4
 #define buttonNum 4
+#define delta 1e-10
+
+int combo = 4;
 
 SDL_Window* screen = NULL;
 SDL_Renderer* renderer = NULL;
@@ -87,5 +90,5 @@ typedef struct
     Records top10[10];
     Piezas actFigure;
     Piezas nextFigure;
-    SDL_Texture* fondos[9];
+    SDL_Texture* fondos[10];
 } Tetris;

@@ -1,8 +1,8 @@
 ﻿#include "static.h"
 #include <time.h>
 #include <string.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 
 void Init()
 {
@@ -41,12 +41,11 @@ void CleanTextures(SDL_Texture** texturas, int num)
     for (int i = 0; i < num; ++i)
     {
         SDL_DestroyTexture(texturas[i]);
-        texturas[i] = NULL;
     }
 }
 
 SDL_Texture* LoadTexture(char* path)
-{
+{ 
     SDL_Texture* textura = NULL;
     SDL_Surface* surface = NULL;
     surface = IMG_Load(path);
@@ -129,7 +128,7 @@ SDL_Texture* createButton(SDL_Texture* menus, char* button, SDL_Rect* pos)
 
 SDL_Texture* ImprimirTexto(SDL_Texture* aux, SDL_Rect* rect, char* string, SDL_Color* color, int size)
 {
-    TTF_Font* font = TTF_OpenFont("assets/fonts/BACKTO1982.TTF", size-5);
+    TTF_Font* font = TTF_OpenFont("assets/fonts/BACKTO1982.TTF", size - 5);
     SDL_Surface* textsurface = TTF_RenderText_Solid(font, string, *color);
     aux = SDL_CreateTextureFromSurface(renderer, textsurface);
     SDL_FreeSurface(textsurface);
@@ -142,7 +141,7 @@ SDL_Texture* ImprimirTexto(SDL_Texture* aux, SDL_Rect* rect, char* string, SDL_C
 SDL_Texture* ImprimirNumeros(SDL_Texture* aux, SDL_Rect* rect, long long* num, SDL_Color* color, char* string, int size)
 {
     sprintf(string, "%lld", *num);
-    TTF_Font* font = TTF_OpenFont("assets/fonts/ARCADECLASSIC.TTF", size+5);
+    TTF_Font* font = TTF_OpenFont("assets/fonts/ARCADECLASSIC.TTF", size + 5);
     SDL_Surface* textsurface = TTF_RenderText_Solid(font, string, *color);
     aux = SDL_CreateTextureFromSurface(renderer, textsurface);
     SDL_FreeSurface(textsurface);
@@ -172,7 +171,6 @@ void DefinirTexturasGame(Tetris* game, SDL_Texture** texturas, char** paths, SDL
 void DefinirTexturasMenu(SDL_Texture** texturas, char** paths, SDL_Rect* pos, char** buttons, int* frame)
 { //funcion que reestructura las texturas del main para formar los botones del main menu
     for (int i = 0; i < menuNum; i++)
-        boton:
     {
         texturas[i] = createButton(texturas[i], buttons[i], &pos[i]); //se crean los botones
         pos[i].x = TAM * 9 - (pos[i].w / 2);                          //se definen las posiciones iniciales de las texturas
@@ -196,16 +194,16 @@ void DefinirTexturasRecords(Tetris* game, SDL_Texture** texturas, SDL_Rect* pos,
     texturas[0] = createButton(texturas[0], buttons[0], &pos[0]); //boton: back
     pos[0].x = 40;                                                //cambia la posicion en x
     pos[0].y = 40;                                                //cambia la posicion en y
-    int initPos = 210;
+    int initPos = 210;                                            //posicion inicial de los primeras 2 secciones de la tabla en y
     for (int i = 1; i < 21; i += 2)
     {
         char numero[1000000] = { '\0' };
         texturas[i] = ImprimirTexto(texturas[i], &pos[i], game->top10[(i - 1) / 2].nombre, &blanco, 15);
         pos[i].x = 94 + 293 / 2 - pos[i].w / 2;
-        pos[i].y = initPos + (41 * (i - 1) / 2) + 20 + pos[i].h / 2;
+        pos[i].y = initPos + (41 * (i - 1) / 2) + 30 + pos[i].h / 2;
         texturas[i + 1] = ImprimirNumeros(texturas[i], &pos[i + 1], &game->top10[(i - 1) / 2].puntaje, &blanco, numero, 15);
         pos[i + 1].x = 387 + 293 / 2 - pos[i + 1].w / 2;
-        pos[i + 1].y = initPos + (41 * (i - 1) / 2) + 20 + pos[i + 1].h / 2;
+        pos[i + 1].y = initPos + (41 * (i - 1) / 2) + 15 + pos[i + 1].h / 2;
     }
 }
 
@@ -432,8 +430,8 @@ int controls()
                 break;
             }
         }
-        fondo = LoadTexture(paths[cont / 10]); //cambio de textura del fondo
-        if (cont == 25)                        //cada cuenta hasta 25 reinicia el loop de cambio detextura
+        fondo = LoadTexture(paths[cont / 6]); //cambio de textura del fondo
+        if (cont == 30)                        //cada cuenta hasta 25 reinicia el loop de cambio detextura
             cont = 0;
         else
             cont += 1;
@@ -886,7 +884,7 @@ int LineasELiminadas(Tablero* t)
     return lineasElim;
 }
 
-void Update(Tetris* game, SDL_Rect* rects, SDL_Texture** texturas)
+void Update(Tetris* game, SDL_Rect* rects, SDL_Texture** texturas, int combo)
 {
     texturas[8] = ImprimirNumeros(texturas[8], &rects[3], &game->score.puntos, &blanco, game->score.sPuntos, 28);
     texturas[9] = ImprimirNumeros(texturas[9], &rects[4], &game->score.lineasEliminadas, &blanco, game->score.slineas, 28);
@@ -896,7 +894,7 @@ void Update(Tetris* game, SDL_Rect* rects, SDL_Texture** texturas)
     rects[4].y = 505 - (rects[4].h / 2);
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, game->fondos[1], NULL, &rects[5]);
-    SDL_RenderCopy(renderer, game->fondos[6], NULL, &rects[6]);
+    SDL_RenderCopy(renderer, game->fondos[combo+5], NULL, &rects[6]);
     DrawPlayGround(&game->tablero); // ocupa x = 0 , x = WIDTH -1  y = HEIGHT -1
     DrawFigure(&game->actFigure);
     DrawFigure(&game->nextFigure);
@@ -1062,6 +1060,81 @@ int GameOver(Tetris* game)
     return retorno;
 }
 
+int GameOverB(Tetris* game)
+{
+    Mix_VolumeMusic(VolM); //coment le otorgamos valor al volumen de la musica de game over
+    Mix_PlayMusic(GO, -1); //coment reproducimos la musica de game over
+
+    SDL_Texture* texturas[2] = {NULL};
+    SDL_Rect rects[2];
+    SDL_Rect pos;
+    SDL_Texture* textoS = NULL;
+    textoS = ImprimirTexto(textoS, &pos, "Presione Shift derecho para salir", &blancoC, 20);
+    pos.x = TAM * 9 - pos.w / 2;
+    pos.y = 660 - pos.h;
+    Records newPlayer;
+    for (int i = 0; i < 30; ++i)
+    {
+        newPlayer.nombre[i] = '\0';
+    }
+    texturas[0] = ImprimirNumeros(texturas[0], &rects[0], &game->score.puntos, &blanco, game->score.sPuntos, 28);
+    rects[0].x = 12 * TAM;
+    rects[0].y = 7 * TAM - rects[0].h / 2;
+    texturas[1] = ImprimirTexto(texturas[1], &rects[1], "Puntaje Obtenido", &blanco, 30);
+    rects[1].x = 2 * TAM;
+    rects[1].y = 7 * TAM - rects[1].h / 2;
+    int inputName = 1, retorno = -1, cont = 0, lessOne = -1;
+    SDL_Event event;
+    while (inputName)
+    {
+        //SDL_StartTextInput();
+        while (SDL_PollEvent(&event) != 0)
+        {
+            switch (event.type)
+            {
+            case SDL_QUIT:
+                inputName = 0;
+                break;
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym)
+                {
+                case SDLK_RSHIFT:
+                    inputName = 0;
+                    retorno = 1;
+                    //SDL_StopTextInput();
+                    Mix_PauseMusic();
+                    break;
+                }
+                break;
+            }
+        }
+
+        if (cont % 5 == 0)
+        {
+            if (blancoC.a >= 255)
+                lessOne = -1;
+            if (blancoC.a <= 10)
+                lessOne = 1;
+            textoS = ImprimirTexto(textoS, &pos, "Presione Shift derecho para salir", &blancoC, 20);
+            blancoC.a += lessOne * 5;
+        }
+
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, game->fondos[4], NULL, NULL);
+        SDL_RenderCopy(renderer, texturas[0], NULL, &rects[0]);
+        SDL_RenderCopy(renderer, texturas[1], NULL, &rects[1]);
+        SDL_RenderCopy(renderer, textoS, NULL, &pos);
+        SDL_RenderPresent(renderer);
+        SDL_UpdateWindowSurface(screen);
+    }
+    blancoC.a = 255;
+    CleanTextures(texturas, 2);
+    SDL_DestroyTexture(textoS);
+    free(game->score.sPuntos);
+    free(game->score.slineas);
+    return retorno;
+}
+
 int CountDown(Tetris* game, SDL_Texture** texturas, SDL_Rect* rects)
 {
     SDL_Rect pos;
@@ -1170,14 +1243,19 @@ int onColision(Tetris* game, Piezas* aux,
         {
             if ((PiezaPos(i, &game->actFigure).y <= 0 || game->actFigure.central.y == 1) && HayColision(&game->tablero, &game->actFigure, texturas) == 1)
             {
-                return 0;
+                if (game->score.puntos > game->top10[9].puntaje)
+                {
+                    return 0;
+                }
+                else return -1;
+                
             }
         }
         if (HayColision(&game->tablero, &game->actFigure, texturas) != 2 && *down)
         {
             DetensionPieza(&game->tablero, &game->actFigure);
             paux = LineasELiminadas(&game->tablero);
-            game->score.puntos += paux == 1 ? paux * 25 : paux * paux * 100;
+            game->score.puntos += paux == 1 ? paux * 25 * (int)combo/4 : paux * 100 * (int)combo/4;
             game->score.lineasEliminadas += paux;
             game->actFigure = game->nextFigure;
             texturas[4] = LoadTexture(colors[rand() % 8]);
@@ -1192,6 +1270,7 @@ int onColision(Tetris* game, Piezas* aux,
 
 int play(Tetris* game)
 {
+    clock_t inicio, stop;
     srand(time(NULL));
     SDL_Texture* images[10] = { NULL };
     CrearTableroEnMemoria(game->tablero.pos);
@@ -1209,10 +1288,12 @@ int play(Tetris* game)
     DefinirTexturasGame(game, images, paths, rects);
     LimpiarTablero(&game->tablero, images);
     SDL_Event event;
-    Update(game, rects, images);
-    int play = BeforeGame(game, images, rects), tick = 0, down = 0, control = 0, direccion = 1, retorno = -1;
+    Update(game, rects, images, combo/4);
+    int play = BeforeGame(game, images, rects), tick = 0, down = 0, control = 0, direccion = 1, retorno = -1, error = 0, flagbeat = 0;//iniciamos las variables "error" que guardara el numero de errores que ha cometido el usuario en el ritmo desde su ultimo acierto y "flagbeat" que evita ganar combo varias veces en un solo beat
     Mix_VolumeMusic(VolM);
     Mix_PlayMusic(bgm, -1);
+    inicio = clock();//iniciamos una variable que guarde el tiempo de ejecucion antes de entrar al play
+
     while (play)
     {        //coment pausamos el tema del menu
         // Mix_VolumeMusic(VolM); //coment reproducimos el tema de juego
@@ -1220,6 +1301,14 @@ int play(Tetris* game)
         // {                           //hacemos que se reproduzca si no esta sonando
         //     Mix_PlayMusic(bgm, -1); //coment el -1 es para que se reproduzca infinitamente
         // }
+
+        stop = clock();//iniciamos una varuable que guarde el tiempo de ejecucion durante todo el play
+        double time = (double)(stop - inicio) / CLOCKS_PER_SEC;//usamos la variable time para restar ambas variables de tiempo y generar un cronometro que loopea cada 0.5s aprox
+        if (time - 0.5 >= delta) {
+            inicio = clock();//esto se usa para que el valor de time se reinicie cada 0.5s
+            flagbeat = 0;//reiniciamos la ganancia de combo
+            tick++;
+        }
         Piezas aux = game->actFigure;
         while (SDL_PollEvent(&event) != 0)
         {
@@ -1234,19 +1323,70 @@ int play(Tetris* game)
                 {
                 case SDLK_UP:
                     RotarPieza(&game->actFigure);
-                    down = 0;
+                    if (time < 0.2 || time>0.4) {//si el usuario presiona abajo durante el tiempo establecido su combo sube y su error se reinicia
+                        if (flagbeat == 0 && combo < 16) {//pero solo si no ha ganado combo durante ese mismo beat
+                            combo++;
+                            flagbeat = 1;
+                        }
+                    }
+                    else if (error < 2) {//si toca abajo fuera de tiempo y tiene menos de 3 errores, se le suma 1
+                        error++;
+                    }
+                    else {
+                        combo = 4;//si ya tiene 3 errores su combo y cantidad de errores se reinician.
+                        error = 0;
+                    }
                     break;
                 case SDLK_DOWN:
                     game->actFigure.central.y++;
                     down = 1;
+                    if (time < 0.2 || time>0.4) {//si el usuario presiona abajo durante el tiempo establecido su combo sube y su error se reinicia
+                        if (flagbeat == 0 && combo < 16) {//pero solo si no ha ganado combo durante ese mismo beat
+                            combo++;
+                            flagbeat = 1;
+                        }
+                        error = 0;
+                    }
+                    else if (error < 2) {//si toca abajo fuera de tiempo y tiene menos de 3 errores, se le suma 1
+                        error++;
+                    }
+                    else {
+                        combo = 4;//si ya tiene 3 errores su combo y cantidad de errores se reinician.
+                        error = 0;
+                    }
+                    tick = 0;
                     break;
                 case SDLK_LEFT:
                     game->actFigure.central.x--;
-                    down = 0;
+                    if (time < 0.2 || time>0.4) {//si el usuario presiona abajo durante el tiempo establecido su combo sube y su error se reinicia
+                        if (flagbeat == 0 && combo < 16) {//pero solo si no ha ganado combo durante ese mismo beat
+                            combo++;
+                            flagbeat = 1;
+                        }
+                    }
+                    else if (error < 2) {//si toca abajo fuera de tiempo y tiene menos de 3 errores, se le suma 1
+                        error++;
+                    }
+                    else {
+                        combo = 4;//si ya tiene 3 errores su combo y cantidad de errores se reinician.
+                        error = 0;
+                    }
                     break;
                 case SDLK_RIGHT:
                     game->actFigure.central.x++;
-                    down = 0;
+                    if (time < 0.2 || time>0.4) {//si el usuario presiona abajo durante el tiempo establecido su combo sube y su error se reinicia
+                        if (flagbeat == 0 && combo < 16) {//pero solo si no ha ganado combo durante ese mismo beat
+                            combo++;
+                            flagbeat = 1;
+                        }
+                    }
+                    else if (error < 2) {//si toca abajo fuera de tiempo y tiene menos de 3 errores, se le suma 1
+                        error++;
+                    }
+                    else {
+                        combo = 4;//si ya tiene 3 errores su combo y cantidad de errores se reinician.
+                        error = 0;
+                    }
                     break;
                 case SDLK_ESCAPE:
                     Mix_PauseMusic();
@@ -1254,10 +1394,11 @@ int play(Tetris* game)
                     if (!play)
                     {
                         retorno = 1;
-                        if(play == 5) retorno = 5; 
+                        if (play == 5) retorno = 5;
                     }
                     else
                         Mix_ResumeMusic();
+                    break;
                 case SDLK_MINUS: //coment asignamos la tecla de '-' para bajar volumen
                     VolM--;
                     break;
@@ -1282,7 +1423,7 @@ int play(Tetris* game)
                 UpdateBorde(&game->tablero, images, paths, &tick, &control, &direccion);
             if (!down)
             {
-                if (tick % 20 == 0)
+                if (tick == 4)
                 {
                     game->actFigure.central.y++;
                     tick = 0;
@@ -1292,15 +1433,21 @@ int play(Tetris* game)
             play = onColision(game, &aux, images, rects, &event, &down);
             if (!play)
                 retorno = 2;
+            if (play == -1)
+            {
+                retorno = 3;
+                play = 0;
+            }
             if (play)
             {
-                Update(game, rects, images);
+                Update(game, rects, images, combo/4);
                 //SDL_Delay(20);
-                tick++;
+
             }
         }
         down = 0;
     }
+    combo = 4;
     CleanTextures(images, 10);
     return retorno;
 }
@@ -1314,8 +1461,9 @@ void InitFondos(Tetris* game)
     game->fondos[4] = LoadTexture("assets/backrounds/gameOver.png");
     game->fondos[5] = LoadTexture("assets/backrounds/scoreboard.png");
     game->fondos[6] = LoadTexture("assets/backrounds/info.png");
-    game->fondos[7] = LoadTexture("assets/backrounds/info2.png");
-    game->fondos[8] = LoadTexture("assets/backrounds/info3.png");
+    game->fondos[7] = LoadTexture("assets/backrounds/info1.png");
+    game->fondos[8] = LoadTexture("assets/backrounds/info2.png");
+    game->fondos[9] = LoadTexture("assets/backrounds/info3.png");
 }
 
 void Close()

@@ -1,6 +1,6 @@
 #include "Functions.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     Init();
     Tetris game;
     InitRecords(game.top10);
@@ -16,18 +16,20 @@ int main(int argc, char *argv[]) {
         case 1:
             opcion = Menu(&game);
             break;
-        
+
         case 2:
             opcion = GameOver(&game);
             break;
-
+        case 3:
+            opcion = GameOverB(&game);
+            break;
         default:
             tetris = 0;
             break;
         }
     }
 
-    CleanTextures(game.fondos, 6);
+    CleanTextures(game.fondos, 10);
     Close();
     return 0;
 }
