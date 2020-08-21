@@ -1,8 +1,8 @@
 ﻿#include "static.h"
 #include <time.h>
 #include <string.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 void Init()
 {
@@ -1309,11 +1309,11 @@ void InitFondos(Tetris* game)
 {
     game->fondos[0] = LoadTexture("assets/backrounds/m1.png");
     game->fondos[1] = LoadTexture("assets/backrounds/Board.png");
-    game->fondos[2] = LoadTexture("assets/backrounds/info.png");
+    game->fondos[2] = LoadTexture("assets/backrounds/info5.png");
     game->fondos[3] = LoadTexture("assets/backrounds/pause.png");
     game->fondos[4] = LoadTexture("assets/backrounds/gameOver.png");
     game->fondos[5] = LoadTexture("assets/backrounds/scoreboard.png");
-    game->fondos[6] = LoadTexture("assets/backrounds/info1.png");
+    game->fondos[6] = LoadTexture("assets/backrounds/info.png");
     game->fondos[7] = LoadTexture("assets/backrounds/info2.png");
     game->fondos[8] = LoadTexture("assets/backrounds/info3.png");
 }
