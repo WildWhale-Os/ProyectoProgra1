@@ -4,26 +4,26 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
-void Init()
+void Init() // Funcion que inicializa todos los elementos de SDL2
 {
-    if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
+    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) // inicializa SDL2
         printf("No se pudo Inicializar SDL2, ERROR: %s\n", SDL_GetError());
     int imgFlag = IMG_INIT_PNG;
-    if (!(IMG_Init(imgFlag)) & imgFlag)
+    if (!(IMG_Init(imgFlag)) & imgFlag) // inicializa SDL_image
         printf("Couldnt initialize Image, error: %s\n", IMG_GetError());
-    if (TTF_Init() < 0)
+    if (TTF_Init() < 0) // iniclizamos SDL_ttf
         printf("No se pudo inicializar TTF, ERROR: %s\n", TTF_GetError());
     if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) < 0)
         //coment iniciamos el audio con parametros por defecto de frecuencia, formato de salida, cantidad de canales (1 para mono 2 para estereo), y 4096 de chunksize porque es lo estandar
         printf("No se pudo inicializar sonido, ERROR: %s\n", Mix_GetError());
-
-    screen = SDL_CreateWindow("Tetris Game",
-                              SDL_WINDOWPOS_CENTERED,
-                              SDL_WINDOWPOS_CENTERED,
-                              TAM * WIDTH + TAM * 6,
-                              TAM * HEIGHT,
+    // creamos ventana de juego
+    screen = SDL_CreateWindow("Tetris Game",          // titulo de la ventana de juego
+                              SDL_WINDOWPOS_CENTERED, // posicion relativa en la pantalla del pc en x
+                              SDL_WINDOWPOS_CENTERED, // posicion relativa en la pantalla del pc en y
+                              TAM * WIDTH + TAM * 6,  // width ventana
+                              TAM * HEIGHT,           // height ventana
                               SDL_WINDOW_SHOWN);
-    renderer = SDL_CreateRenderer(screen, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(screen, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // creamos y configuramos el renderer
 
     sfx = Mix_LoadWAV("assets/SEffects/Line.wav"); //cargamos las pistas;
     bot = Mix_LoadWAV("assets/SEffects/boton.wav");
@@ -31,11 +31,11 @@ void Init()
     bgm = Mix_LoadMUS("assets/Music/vitality.mp3");
     pausa = Mix_LoadWAV("assets/Music/bgm.wav");
     GO = Mix_LoadMUS("assets/Music/det.mp3");
-    Mix_VolumeChunk(pausa, VolM);
-    Mix_PlayChannel(-1, pausa, -1);
+    Mix_VolumeChunk(pausa, VolM);   // incilizamos el volumen del la pista incial del juego
+    Mix_PlayChannel(-1, pausa, -1); // le iniciamos la reproduccion de la pista principal
 }
 
-void CleanTextures(SDL_Texture **texturas, int num)
+void CleanTextures(SDL_Texture **texturas, int num) // destruye un numero dado texturas en un arreglo
 {
     for (int i = 0; i < num; ++i)
     {
@@ -43,7 +43,7 @@ void CleanTextures(SDL_Texture **texturas, int num)
     }
 }
 
-SDL_Texture *LoadTexture(char *path)
+SDL_Texture *LoadTexture(char *path) // funcion utilizada para cargar imagenes (full size)
 {
     SDL_Texture *textura = NULL;
     SDL_Surface *surface = NULL;
@@ -62,7 +62,7 @@ SDL_Texture *LoadTexture(char *path)
     return textura;
 }
 
-void CrearArregloPath(char **paths)
+void CrearArregloPath(char **paths) // inicializa el path de las imagenes que se ocupan en el borde de la zona de juego
 {
     paths[0] = "assets/Gradient/vg1.png";
     paths[1] = "assets/Gradient/lcg1.png";
@@ -94,7 +94,7 @@ void CrearArregloPath(char **paths)
     paths[27] = "assets/Gradient/rcg7.png";
 }
 
-void CrearTableroEnMemoria(SDL_Texture *pos[][WIDTH])
+void CrearTableroEnMemoria(SDL_Texture *pos[][WIDTH]) // inicializa cada espacio de la matriz que llamamos tablero en NULL
 {
     for (int j = 0; j < HEIGHT; ++j)
     {
@@ -105,17 +105,17 @@ void CrearTableroEnMemoria(SDL_Texture *pos[][WIDTH])
     }
 }
 
-void CrearPieza(Piezas *p, SDL_Texture *image)
+void CrearPieza(Piezas *p, SDL_Texture *image) // esta funcion crea una pieza
 {
-    int tetramino = rand() % 7;
-    p->central.x = 15 - 0.5;
-    p->central.y = 2;
-    for (int i = 0; i < 3; ++i)
-        p->laterales[i] = Tetraminos[tetramino][i];
-    p->images = image;
+    int tetramino = rand() % 7;                     // buscamos un numero al azar entre 0 a 6
+    p->central.x = 15 - 0.5;                        // centramos en la pantalla en x
+    p->central.y = 2;                               // y vajamos la figura dos espacios
+    for (int i = 0; i < 3; ++i)                     // por cada cuadrado lateral de cada figura
+        p->laterales[i] = Tetraminos[tetramino][i]; // le asignamos las posiciones relativa de los cuadrados perifericos de la figura
+    p->images = image;                              // y le asignamos el color correspondiente
 }
 
-SDL_Texture *createButton(SDL_Texture *menus, char *button, SDL_Rect *pos)
+SDL_Texture *createButton(SDL_Texture *menus, char *button, SDL_Rect *pos) // funcion que crea un boton dado una textura, un path y un rect
 {
     SDL_Surface *textSurface = IMG_Load(button);                 //crea un puntero a superficie
     menus = SDL_CreateTextureFromSurface(renderer, textSurface); //crea una textura desde una superficie existente
@@ -125,8 +125,9 @@ SDL_Texture *createButton(SDL_Texture *menus, char *button, SDL_Rect *pos)
     return menus;                                                //se devuelve el puntero menu con la textura creada
 }
 
-SDL_Texture *ImprimirTexto(SDL_Texture *aux, SDL_Rect *rect, char *string, SDL_Color *color, int size)
+SDL_Texture *ImprimirTexto(SDL_Rect *rect, char *string, SDL_Color *color, int size)
 {
+    SDL_Texture *aux = NULL;
     TTF_Font *font = TTF_OpenFont("assets/fonts/BACKTO1982.TTF", size - 5);
     SDL_Surface *textsurface = TTF_RenderText_Solid(font, string, *color);
     aux = SDL_CreateTextureFromSurface(renderer, textsurface);
@@ -137,8 +138,9 @@ SDL_Texture *ImprimirTexto(SDL_Texture *aux, SDL_Rect *rect, char *string, SDL_C
     return aux;
 }
 
-SDL_Texture *ImprimirNumeros(SDL_Texture *aux, SDL_Rect *rect, long long *num, SDL_Color *color, char *string, int size)
+SDL_Texture *ImprimirNumeros(SDL_Rect *rect, long long *num, SDL_Color *color, char *string, int size)
 {
+    SDL_Texture *aux = NULL;
     sprintf(string, "%lld", *num);
     TTF_Font *font = TTF_OpenFont("assets/fonts/ARCADECLASSIC.TTF", size + 5);
     SDL_Surface *textsurface = TTF_RenderText_Solid(font, string, *color);
@@ -162,7 +164,7 @@ void DefinirTexturasGame(Tetris *game, SDL_Texture **texturas, char **paths, SDL
     CrearPieza(&game->nextFigure, texturas[4]);
     game->actFigure.central.x = 6;
     game->actFigure.central.y = 1;
-    texturas[5] = LoadTexture("assets/backrounds/info.png");
+    //texturas[5] = LoadTexture("assets/backrounds/info.png");
     texturas[8] = NULL;
     texturas[9] = NULL;
 }
@@ -197,10 +199,10 @@ void DefinirTexturasRecords(Tetris *game, SDL_Texture **texturas, SDL_Rect *pos,
     for (int i = 1; i < 21; i += 2)
     {
         char numero[1000000] = {'\0'};
-        texturas[i] = ImprimirTexto(texturas[i], &pos[i], game->top10[(i - 1) / 2].nombre, &blanco, 15);
+        texturas[i] = ImprimirTexto(&pos[i], game->top10[(i - 1) / 2].nombre, &blanco, 15);
         pos[i].x = 94 + 293 / 2 - pos[i].w / 2;
         pos[i].y = initPos + (41 * (i - 1) / 2) + 30 + pos[i].h / 2;
-        texturas[i + 1] = ImprimirNumeros(texturas[i], &pos[i + 1], &game->top10[(i - 1) / 2].puntaje, &blanco, numero, 15);
+        texturas[i + 1] = ImprimirNumeros(&pos[i + 1], &game->top10[(i - 1) / 2].puntaje, &blanco, numero, 15);
         pos[i + 1].x = 387 + 293 / 2 - pos[i + 1].w / 2;
         pos[i + 1].y = initPos + (41 * (i - 1) / 2) + 15 + pos[i + 1].h / 2;
     }
@@ -365,7 +367,7 @@ int controls()
     DefinirTexturasControl(button, pos, pathButtons); //reestructuracion de texturas del main para su uso como boton en un estado inicial especifico
     int cont = 0;                                     //contador de ticks para el cambio del backround
     SDL_Event event;                                  //definicion del evento
-    int inControl = 1, retorno = 0;                   //comodines de permanencia en una funcion: en el menu controls y uso en el main respectivamente
+    int inControl = 1, retorno = -1;                   //comodines de permanencia en una funcion: en el menu controls y uso en el main respectivamente
     while (inControl)                                 //Loop que verifica que estemos en el menu controls
     {
         while (SDL_PollEvent(&event)) //mientas el evento "event" este activo
@@ -374,7 +376,7 @@ int controls()
             {
             case SDL_QUIT: //en caso de apretar la x, se devuelve 5 al main (lo que hace que se cierre el juego)
                 inControl = 0;
-                retorno = 4; //salir del menu puntaje
+                retorno = -1; //salir del menu puntaje
                 break;
             case SDL_MOUSEMOTION: //en caso de que el mouse se mueva, se detecta la posicion y se establece como x e y.
                 SDL_GetMouseState(&x, &y);
@@ -614,7 +616,7 @@ int pause(SDL_Texture **texturas, Tetris *game)
     SDL_Rect pos[menuNum];                              //array de rects que se usara mas adelante
     DefinirTexturasPause(texturas, pos, button, color); //reestructuracion de texturas del main para su uso como boton en un estado inicial especifico
     SDL_Event event;                                    //definicion del evento
-    int inPause = 1, retorno;                           //comodines de en el menu de pausa y valor de retorno al main
+    int inPause = 1, retorno = -1;                      //comodines de en el menu de pausa y valor de retorno al main
     while (inPause)                                     //mientras este en el menu de pausa
     {
         while (SDL_PollEvent(&event)) //mientas el evento "event" este activo
@@ -659,12 +661,22 @@ int pause(SDL_Texture **texturas, Tetris *game)
                             Mix_PlayChannel(-1, bot2, 0);
                             Mix_Pause(0);
                             inPause = Puntajes(game);
+                            if (inPause == 5)
+                            {
+                                inPause = 0;
+                                retorno = -1;
+                            }
                             Mix_Resume(0);
                             break;
                         case 2: //boton controls
                             Mix_PlayChannel(-1, bot2, 0);
                             Mix_Pause(0);
                             inPause = controls();
+                            if (inPause == -1)
+                            {
+                                inPause = 0;
+                                retorno = -1;
+                            }
                             Mix_Resume(0);
                             break;
                         case 3: //boton main menu
@@ -696,6 +708,7 @@ int pause(SDL_Texture **texturas, Tetris *game)
         SDL_RenderPresent(renderer);     //se presenta el renderer
         SDL_UpdateWindowSurface(screen); //se actualiza la pantalla
     }
+    Mix_Pause(0);
     return retorno; //valor de retorno al main
 }
 
@@ -858,8 +871,8 @@ int LineasELiminadas(Tablero *t)
 
 void Update(Tetris *game, SDL_Rect *rects, SDL_Texture **texturas, int combo)
 {
-    texturas[8] = ImprimirNumeros(texturas[8], &rects[3], &game->score.puntos, &blanco, game->score.sPuntos, 28);
-    texturas[9] = ImprimirNumeros(texturas[9], &rects[4], &game->score.lineasEliminadas, &blanco, game->score.slineas, 28);
+    texturas[8] = ImprimirNumeros(&rects[3], &game->score.puntos, &blanco, game->score.sPuntos, 28);
+    texturas[9] = ImprimirNumeros(&rects[4], &game->score.lineasEliminadas, &blanco, game->score.slineas, 28);
     rects[3].x = TAM * 15 - (rects[3].w / 2);
     rects[3].y = 330 - (rects[3].h / 2);
     rects[4].x = TAM * 15 - (rects[4].w / 2);
@@ -942,7 +955,7 @@ int GameOver(Tetris *game)
     SDL_Rect rects[4];
     SDL_Rect pos;
     SDL_Texture *textoS = NULL;
-    textoS = ImprimirTexto(textoS, &pos, "Presione Shift derecho para salir", &blancoC, 20);
+    textoS = ImprimirTexto(&pos, "Presione Shift derecho para salir", &blancoC, 20);
     pos.x = TAM * 9 - pos.w / 2;
     pos.y = 660 - pos.h;
     Records newPlayer;
@@ -950,17 +963,17 @@ int GameOver(Tetris *game)
     {
         newPlayer.nombre[i] = '\0';
     }
-    texturas[0] = ImprimirNumeros(texturas[0], &rects[0], &game->score.puntos, &blanco, game->score.sPuntos, 28);
+    texturas[0] = ImprimirNumeros(&rects[0], &game->score.puntos, &blanco, game->score.sPuntos, 28);
     rects[0].x = 12 * TAM;
     rects[0].y = 7 * TAM - rects[0].h / 2;
-    texturas[1] = ImprimirTexto(texturas[1], &rects[1], "Puntaje Obtenido", &blanco, 30);
+    texturas[1] = ImprimirTexto(&rects[1], "Puntaje Obtenido", &blanco, 30);
     rects[1].x = 2 * TAM;
     rects[1].y = 7 * TAM - rects[1].h / 2;
-    texturas[2] = ImprimirTexto(texturas[2], &rects[2], "Ingrese Nombre:", &blanco, 26);
+    texturas[2] = ImprimirTexto(&rects[2], "Ingrese Nombre:", &blanco, 26);
     rects[2].x = 2 * TAM;
     rects[2].y = 10 * TAM - rects[2].h / 2;
     newPlayer.puntaje = game->score.puntos;
-    texturas[3] = ImprimirTexto(texturas[3], &rects[3], newPlayer.nombre, &blanco, 26);
+    texturas[3] = ImprimirTexto(&rects[3], newPlayer.nombre, &blanco, 26);
     rects[3].x = 12 * TAM;
     rects[3].y = 10 * TAM - rects[3].h / 2;
     int inputName = 1, retorno = -1, cont = 0, lessOne = -1;
@@ -977,7 +990,7 @@ int GameOver(Tetris *game)
                 break;
             case SDL_TEXTINPUT:
                 strcat(newPlayer.nombre, event.text.text);
-                texturas[3] = ImprimirTexto(texturas[3], &rects[3], newPlayer.nombre, &blanco, 26);
+                texturas[3] = ImprimirTexto(&rects[3], newPlayer.nombre, &blanco, 26);
                 rects[3].x = 12 * TAM;
                 rects[3].y = 10 * TAM - rects[3].h / 2;
                 break;
@@ -988,7 +1001,7 @@ int GameOver(Tetris *game)
                     if (strlen(newPlayer.nombre) > 0)
                     {
                         newPlayer.nombre[strlen(newPlayer.nombre) - 1] = '\0';
-                        texturas[3] = ImprimirTexto(texturas[3], &rects[3], newPlayer.nombre, &blanco, 26);
+                        texturas[3] = ImprimirTexto(&rects[3], newPlayer.nombre, &blanco, 26);
                         rects[3].x = 12 * TAM;
                         rects[3].y = 10 * TAM - rects[3].h / 2;
                     }
@@ -1010,7 +1023,7 @@ int GameOver(Tetris *game)
                 lessOne = -1;
             if (blancoC.a <= 10)
                 lessOne = 1;
-            textoS = ImprimirTexto(textoS, &pos, "Presione Shift derecho para salir", &blancoC, 20);
+            textoS = ImprimirTexto(&pos, "Presione Shift derecho para salir", &blancoC, 20);
             blancoC.a += lessOne * 5;
         }
 
@@ -1041,7 +1054,7 @@ int GameOverB(Tetris *game)
     SDL_Rect rects[2];
     SDL_Rect pos;
     SDL_Texture *textoS = NULL;
-    textoS = ImprimirTexto(textoS, &pos, "Presione Shift derecho para salir", &blancoC, 20);
+    textoS = ImprimirTexto(&pos, "Presione Shift derecho para salir", &blancoC, 20);
     pos.x = TAM * 9 - pos.w / 2;
     pos.y = 660 - pos.h;
     Records newPlayer;
@@ -1049,10 +1062,10 @@ int GameOverB(Tetris *game)
     {
         newPlayer.nombre[i] = '\0';
     }
-    texturas[0] = ImprimirNumeros(texturas[0], &rects[0], &game->score.puntos, &blanco, game->score.sPuntos, 28);
+    texturas[0] = ImprimirNumeros(&rects[0], &game->score.puntos, &blanco, game->score.sPuntos, 28);
     rects[0].x = 12 * TAM;
     rects[0].y = 7 * TAM - rects[0].h / 2;
-    texturas[1] = ImprimirTexto(texturas[1], &rects[1], "Puntaje Obtenido", &blanco, 30);
+    texturas[1] = ImprimirTexto(&rects[1], "Puntaje Obtenido", &blanco, 30);
     rects[1].x = 2 * TAM;
     rects[1].y = 7 * TAM - rects[1].h / 2;
     int inputName = 1, retorno = -1, cont = 0, lessOne = -1;
@@ -1087,7 +1100,7 @@ int GameOverB(Tetris *game)
                 lessOne = -1;
             if (blancoC.a <= 10)
                 lessOne = 1;
-            textoS = ImprimirTexto(textoS, &pos, "Presione Shift derecho para salir", &blancoC, 20);
+            textoS = ImprimirTexto(&pos, "Presione Shift derecho para salir", &blancoC, 20);
             blancoC.a += lessOne * 5;
         }
 
@@ -1113,7 +1126,7 @@ int CountDown(Tetris *game, SDL_Texture **texturas, SDL_Rect *rects)
     long long time = 3;
     char sNum[2] = {'\0'};
     SDL_Texture *texto = NULL;
-    texto = ImprimirNumeros(texto, &pos, &time, &blanco, sNum, 100);
+    texto = ImprimirNumeros(&pos, &time, &blanco, sNum, 100);
     pos.x = TAM * 9 - pos.w / 2;
     pos.y = (TAM * HEIGHT) / 2 - pos.h / 2;
     int preGame = 1, retorno = 1;
@@ -1138,7 +1151,7 @@ int CountDown(Tetris *game, SDL_Texture **texturas, SDL_Rect *rects)
         SDL_UpdateWindowSurface(screen);
         SDL_Delay(1000);
         time--;
-        texto = ImprimirNumeros(texto, &pos, &time, &blanco, sNum, 100);
+        texto = ImprimirNumeros(&pos, &time, &blanco, sNum, 100);
         pos.x = TAM * 9 - pos.w / 2;
         pos.y = (TAM * HEIGHT) / 2 - pos.h / 2;
         if (time == 0)
@@ -1153,7 +1166,7 @@ int BeforeGame(Tetris *game, SDL_Texture **texturas, SDL_Rect *rects)
     SDL_Texture *images[2] = {NULL};
     SDL_Rect pos;
     images[0] = LoadTexture("assets/backrounds/c1.png");
-    images[1] = ImprimirTexto(images[1], &pos, "Presione Espacio cuando este listo", &blancoC, 20);
+    images[1] = ImprimirTexto(&pos, "Presione Espacio cuando este listo", &blancoC, 20);
     pos.x = TAM * 9 - pos.w / 2;
     pos.y = TAM * (HEIGHT - 1) - pos.h / 2;
     SDL_Event ev;
@@ -1188,7 +1201,7 @@ int BeforeGame(Tetris *game, SDL_Texture **texturas, SDL_Rect *rects)
                 lessOne = -1;
             if (blancoC.a <= 10)
                 lessOne = 1;
-            images[1] = ImprimirTexto(images[1], &pos, "Presione Espacio cuando este listo", &blancoC, 20);
+            images[1] = ImprimirTexto(&pos, "Presione Espacio cuando este listo", &blancoC, 20);
             blancoC.a += lessOne * 5;
         }
         SDL_RenderClear(renderer);
@@ -1227,7 +1240,7 @@ int onColision(Tetris *game, Piezas *aux,
         {
             DetensionPieza(&game->tablero, &game->actFigure);
             paux = LineasELiminadas(&game->tablero);
-            game->score.puntos += paux == 1 ? paux * 25 * (int)combo / 4 : paux * 100 * (int)combo / 4;
+            game->score.puntos += paux == 1 ? paux * 25 * (int)combo / 4 : paux * 100 * (int)(combo / 4);
             game->score.lineasEliminadas += paux;
             game->actFigure = game->nextFigure;
             texturas[4] = LoadTexture(colors[rand() % 8]);
@@ -1375,28 +1388,35 @@ int play(Tetris *game)
                     Mix_PauseMusic();
                     play = pause(images, game);
                     if (!play)
-                    {
                         retorno = 1;
-                        if (play == 5)
-                            retorno = 5;
-                    }
+                    else if (play == -1)
+                    {
+                        retorno = -1;
+                        play = 0;
+                    } 
                     else
                         Mix_ResumeMusic();
                     break;
                 case SDLK_MINUS: //coment asignamos la tecla de '-' para bajar volumen
                     VolM--;
+                    Mix_VolumeMusic(VolM);
                     break;
                 case SDLK_PLUS: //coment asignamos la tecla '+' para subir el volumen
                     VolM++;
+                    Mix_VolumeMusic(VolM);
                     break;
                 case SDLK_m: //coment asignamos la tecla m para silenciar el audio
                     if (VolM != 0)
                     {
                         mute = VolM; //si el volumen en ese momento no es 0, el valor del volumen se guardara en mute y luego pasara a ser 0
                         VolM = 0;
+                        Mix_VolumeMusic(VolM);
                     }
                     else
+                    {    
                         VolM = mute; //si es 0, se cambiara por el valor de mute
+                        Mix_VolumeMusic(VolM);    
+                    }
                     break;
                 }
             }

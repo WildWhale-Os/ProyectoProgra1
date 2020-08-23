@@ -12,11 +12,9 @@ int main(int argc, char* argv[]) {
         case 0:
             opcion = play(&game);
             break;
-
         case 1:
             opcion = Menu(&game);
             break;
-
         case 2:
             opcion = GameOver(&game);
             break;
