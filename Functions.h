@@ -367,7 +367,7 @@ int controls()
     DefinirTexturasControl(button, pos, pathButtons); //reestructuracion de texturas del main para su uso como boton en un estado inicial especifico
     int cont = 0;                                     //contador de ticks para el cambio del backround
     SDL_Event event;                                  //definicion del evento
-    int inControl = 1, retorno = -1;                   //comodines de permanencia en una funcion: en el menu controls y uso en el main respectivamente
+    int inControl = 1, retorno = -1;                  //comodines de permanencia en una funcion: en el menu controls y uso en el main respectivamente
     while (inControl)                                 //Loop que verifica que estemos en el menu controls
     {
         while (SDL_PollEvent(&event)) //mientas el evento "event" este activo
@@ -761,6 +761,17 @@ void LimpiarTablero(Tablero *t, SDL_Texture *images[])
     }
 }
 
+void DestruirTablero(Tablero *tablero)
+{
+    for (int i = 0; i < HEIGHT; i++)
+    {
+        for (int j = 0; j < WIDTH; j++)
+        {
+            SDL_DestroyTexture(tablero->pos[i][j]);
+        }
+    }
+}
+
 void UpdateTablero(Tablero *t, SDL_Texture *images[])
 {
     for (int y = 0; y < HEIGHT; ++y)
@@ -781,26 +792,47 @@ void UpdateTablero(Tablero *t, SDL_Texture *images[])
     }
 }
 
-void UpdateBorde(Tablero *t, SDL_Texture **texturas, char *paths[], int *tick, int *control, int *direccion)
+void UpdateBorde(Tablero *t, SDL_Texture **texturas, char *paths[], int tick, int *control, int *direccion)
 {
-    if (*tick % 2 == 0)
+    // if (*tick % 2 == 0)
+    // {
+    //     switch (*direccion)
+    //     {
+    //     case 1:
+    //         *control += 4;
+    //         break;
+    //     case -1:
+    //         *control -= 4;
+    //         break;
+    //     }
+    //     texturas[0] = LoadTexture(paths[0 + *control]);
+    //     texturas[1] = LoadTexture(paths[3 + *control]);
+    //     texturas[2] = LoadTexture(paths[1 + *control]);
+    //     texturas[3] = LoadTexture(paths[2 + *control]);
+    //     UpdateTablero(t, texturas);
+    //     if (*control >= 24 || *control <= 0)
+    //         *direccion *= -1;
+    // }
+
+    if (tick >= 3 && tick <= 5)
     {
-        switch (*direccion)
-        {
-        case 1:
-            *control += 4;
-            break;
-        case -1:
-            *control -= 4;
-            break;
-        }
+        texturas[0] = LoadTexture(paths[24]);
+        texturas[1] = LoadTexture(paths[27]);
+        texturas[2] = LoadTexture(paths[25]);
+        texturas[3] = LoadTexture(paths[26]);
+        UpdateTablero(t, texturas);
+    }
+    else if (tick < 3)
+    {
         texturas[0] = LoadTexture(paths[0 + *control]);
         texturas[1] = LoadTexture(paths[3 + *control]);
         texturas[2] = LoadTexture(paths[1 + *control]);
         texturas[3] = LoadTexture(paths[2 + *control]);
         UpdateTablero(t, texturas);
-        if (*control >= 24 || *control <= 0)
-            *direccion *= -1;
+        if (*control < 24)
+            *control += 8;
+        else
+            *control = 0;
     }
 }
 
@@ -1223,7 +1255,6 @@ int onColision(Tetris *game, Piezas *aux,
     int paux;
     if (HayColision(&game->tablero, &game->actFigure, texturas))
     {
-        game->actFigure = *aux;
         for (int i = 0; i < 4; ++i)
         {
             if ((PiezaPos(i, &game->actFigure).y <= 0 || game->actFigure.central.y == 1) && HayColision(&game->tablero, &game->actFigure, texturas) == 1)
@@ -1236,6 +1267,7 @@ int onColision(Tetris *game, Piezas *aux,
                     return -1;
             }
         }
+        game->actFigure = *aux;
         if (HayColision(&game->tablero, &game->actFigure, texturas) != 2 && *down)
         {
             DetensionPieza(&game->tablero, &game->actFigure);
@@ -1274,7 +1306,7 @@ int play(Tetris *game)
     LimpiarTablero(&game->tablero, images);
     SDL_Event event;
     Update(game, rects, images, combo / 4);
-    int play = BeforeGame(game, images, rects), tick = 0, down = 0, control = 0, direccion = 1, retorno = -1, error = 0, flagbeat = 0; //iniciamos las variables "error" que guardara el numero de errores que ha cometido el usuario en el ritmo desde su ultimo acierto y "flagbeat" que evita ganar combo varias veces en un solo beat
+    int play = BeforeGame(game, images, rects), tick = 0, down = 0, control = 0, direccion = 1, retorno = -1, error = 0, flagbeat = 0, playlist = 1; //iniciamos las variables "error" que guardara el numero de errores que ha cometido el usuario en el ritmo desde su ultimo acierto y "flagbeat" que evita ganar combo varias veces en un solo beat
     Mix_VolumeMusic(VolM);
     Mix_PlayMusic(bgm, -1);
     inicio = clock(); //iniciamos una variable que guarde el tiempo de ejecucion antes de entrar al play
@@ -1288,6 +1320,29 @@ int play(Tetris *game)
             inicio = clock(); //esto se usa para que el valor de time se reinicie cada 0.5s
             flagbeat = 0;     //reiniciamos la ganancia de combo
             tick++;
+        }
+        if (Mix_PlayingMusic() == 0)
+        {
+            switch (playlist)
+            {
+            case 1:
+                bgm = Mix_LoadMUS("assets/Music/konga.mp3");
+                break;
+            case 2:
+                bgm = Mix_LoadMUS("assets/Music/megalovania.mp3");
+                break;
+            case 3:
+                bgm = Mix_LoadMUS("assets/Music/stained-glass.mp3");
+                break;
+            default:
+                bgm = Mix_LoadMUS("assets/Music/vitality.mp3");
+            }
+            Mix_PlayMusic(bgm, 0);
+            playlist++;
+            if (playlist == 4)
+            {
+                playlist = 0;
+            }
         }
         Piezas aux = game->actFigure;
         while (SDL_PollEvent(&event) != 0)
@@ -1393,7 +1448,7 @@ int play(Tetris *game)
                     {
                         retorno = -1;
                         play = 0;
-                    } 
+                    }
                     else
                         Mix_ResumeMusic();
                     break;
@@ -1413,9 +1468,9 @@ int play(Tetris *game)
                         Mix_VolumeMusic(VolM);
                     }
                     else
-                    {    
+                    {
                         VolM = mute; //si es 0, se cambiara por el valor de mute
-                        Mix_VolumeMusic(VolM);    
+                        Mix_VolumeMusic(VolM);
                     }
                     break;
                 }
@@ -1424,8 +1479,7 @@ int play(Tetris *game)
 
         if (play)
         {
-            if (tick % 10 == 0)
-                UpdateBorde(&game->tablero, images, paths, &tick, &control, &direccion);
+            UpdateBorde(&game->tablero, images, paths, (int)(time * 10), &control, &direccion);
             if (!down)
                 if (tick == 4)
                 {
@@ -1449,6 +1503,7 @@ int play(Tetris *game)
     }
     combo = 4;
     CleanTextures(images, 10);
+    DestruirTablero(&game->tablero);
     return retorno;
 }
 
