@@ -1308,7 +1308,7 @@ int play(Tetris *game)
     Update(game, rects, images, combo / 4);
     int play = BeforeGame(game, images, rects), tick = 0, down = 0, control = 0, direccion = 1, retorno = -1, error = 0, flagbeat = 0, playlist = 1; //iniciamos las variables "error" que guardara el numero de errores que ha cometido el usuario en el ritmo desde su ultimo acierto y "flagbeat" que evita ganar combo varias veces en un solo beat
     Mix_VolumeMusic(VolM);
-    Mix_PlayMusic(bgm, -1);
+    Mix_PlayMusic(bgm, 0);
     inicio = clock(); //iniciamos una variable que guarde el tiempo de ejecucion antes de entrar al play
 
     while (play)
@@ -1358,6 +1358,7 @@ int play(Tetris *game)
                 {
                 case SDLK_UP:
                     RotarPieza(&game->actFigure);
+                    down = 0;
                     if (time < 0.2 || time > 0.4)
                     { //si el usuario presiona abajo durante el tiempo establecido su combo sube y su error se reinicia
                         if (flagbeat == 0 && combo < 16)
@@ -1401,6 +1402,7 @@ int play(Tetris *game)
                     break;
                 case SDLK_LEFT:
                     game->actFigure.central.x--;
+                    down = 0;
                     if (time < 0.2 || time > 0.4)
                     { //si el usuario presiona abajo durante el tiempo establecido su combo sube y su error se reinicia
                         if (flagbeat == 0 && combo < 16)
@@ -1421,6 +1423,7 @@ int play(Tetris *game)
                     break;
                 case SDLK_RIGHT:
                     game->actFigure.central.x++;
+                    down = 0;
                     if (time < 0.2 || time > 0.4)
                     { //si el usuario presiona abajo durante el tiempo establecido su combo sube y su error se reinicia
                         if (flagbeat == 0 && combo < 16)
